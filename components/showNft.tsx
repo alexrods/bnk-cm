@@ -21,14 +21,34 @@ interface TraitsProps {
 const Trait = ({ heading, description }: TraitProps) => {
   return (
     <Box
-      backgroundColor={"#ebebeb"}
-      borderRadius={"5px"}
+      backgroundColor={"rgba(0, 0, 0, 0.7)"}
+      borderRadius={"8px"}
       width={"120px"}
-      minHeight={"50px"}
+      minHeight={"70px"}
+      borderWidth="1px"
+      borderColor="var(--primary-color)"
+      boxShadow="0 0 10px rgba(0, 255, 255, 0.2)"
+      p={2}
+      transition="all 0.3s ease"
+      _hover={{
+        transform: "translateY(-2px)",
+        boxShadow: "0 0 15px rgba(0, 255, 255, 0.4)"
+      }}
     >
-      <VStack>
-        <Text fontSize={"sm"}>{heading}</Text>
-        <Text fontSize={"sm"} marginTop={"-2"} fontWeight={"semibold"}>
+      <VStack spacing={1} justify="center" height="100%">
+        <Text 
+          fontSize={"sm"} 
+          color="var(--primary-color)" 
+          fontWeight="medium"
+          textShadow="0 0 5px rgba(0, 255, 255, 0.3)"
+        >
+          {heading}
+        </Text>
+        <Text 
+          fontSize={"sm"} 
+          fontWeight={"bold"}
+          color="white"
+        >
           {description}
         </Text>
       </VStack>
@@ -55,8 +75,23 @@ const Traits = ({ metadata }: TraitsProps) => {
 
   return (
     <>
-      <Divider marginTop={"15px"} />
-      <SimpleGrid marginTop={"15px"} columns={3} spacing={5}>
+      <Divider 
+        marginTop={"20px"} 
+        borderColor="var(--primary-color)" 
+        opacity="0.5"
+        boxShadow="0 0 5px rgba(0, 255, 255, 0.2)"
+      />
+      <Text 
+        fontSize="lg" 
+        fontWeight="bold" 
+        mt={4} 
+        mb={2} 
+        color="var(--primary-color)"
+        textShadow="0 0 8px rgba(0, 255, 255, 0.4)"
+      >
+        Attributes
+      </Text>
+      <SimpleGrid marginTop={"10px"} columns={{base: 2, md: 3}} spacing={5}>
         {traitList}
       </SimpleGrid>
     </>
@@ -74,20 +109,56 @@ export default function Card({
   }
   const image = metadata.animation_url ?? metadata.image;
   return (
-    <Box position={"relative"} width={"full"} overflow={"hidden"}>
+    <Box 
+      position={"relative"} 
+      width={"full"} 
+      overflow={"hidden"}
+      borderRadius="lg"
+      bg="rgba(0, 0, 0, 0.6)"
+      p={4}
+      boxShadow="0 0 20px rgba(0, 255, 255, 0.2)"
+      transition="all 0.3s ease"
+      _hover={{
+        boxShadow: "0 0 25px rgba(0, 255, 255, 0.3)"
+      }}
+    >
       <Box
         key={image}
-        height={"sm"}
+        height={{base: "xs", md: "sm"}}
         position="relative"
         backgroundPosition="center"
         backgroundRepeat="no-repeat"
         backgroundSize="cover"
         backgroundImage={`url(${image})`}
+        borderRadius="md"
+        borderWidth="2px"
+        borderColor="var(--primary-color)"
+        overflow="hidden"
+        boxShadow="0 0 15px rgba(0, 255, 255, 0.3)"
+        mb={4}
+        transition="all 0.3s ease"
+        _hover={{
+          transform: "scale(1.02)",
+          boxShadow: "0 0 20px rgba(0, 255, 255, 0.5)"
+        }}
       />
-      <Text fontWeight={"semibold"} marginTop={"15px"}>
+      <Text 
+        fontWeight="bold" 
+        fontSize="xl"
+        marginTop={"15px"}
+        color="var(--primary-color)"
+        textShadow="0 0 8px rgba(0, 255, 255, 0.4)"
+      >
         {metadata.name}
       </Text>
-      <Text>{metadata.description}</Text>
+      <Text 
+        mt={2} 
+        color="white"
+        fontSize="md"
+        lineHeight="1.6"
+      >
+        {metadata.description}
+      </Text>
       <Traits metadata={metadata} />
     </Box>
   );
@@ -105,23 +176,70 @@ export const ShowNft = ({ nfts }: Props) => {
   }
 
   const cards = nfts.map((nft, index) => (
-    <AccordionItem key={nft.mint + "Accordion"}>
+    <AccordionItem 
+      key={nft.mint + "Accordion"}
+      borderWidth="2px"
+      borderColor="var(--primary-color)" 
+      borderRadius="lg"
+      mb={4}
+      bg="rgba(0, 0, 0, 0.7)"
+      overflow="hidden"
+      boxShadow="0 0 15px rgba(0, 255, 255, 0.2)"
+      transition="all 0.3s ease"
+      _hover={{
+        boxShadow: "0 0 20px rgba(0, 255, 255, 0.4)"
+      }}
+    >
       <h2>
-        <AccordionButton>
-          <Box as="span" flex="1" textAlign="left">
+        <AccordionButton 
+          p={4}
+          bg="rgba(0, 0, 0, 0.8)"
+          _hover={{
+            bg: "rgba(0, 255, 255, 0.1)"
+          }}
+        >
+          <Box 
+            as="span" 
+            flex="1" 
+            textAlign="left"
+            fontWeight="bold"
+            fontSize="lg"
+            color="var(--primary-color)"
+            textShadow="0 0 5px rgba(0, 255, 255, 0.4)"
+          >
             {nft.offChainMetadata?.name}
           </Box>
-          <AccordionIcon />
+          <AccordionIcon color="var(--primary-color)" boxSize={6} />
         </AccordionButton>
       </h2>
-      <AccordionPanel pb={4}>
+      <AccordionPanel py={6} px={4}>
         <Card metadata={nft.offChainMetadata} key={nft.mint} />
       </AccordionPanel>
     </AccordionItem>
   ));
   return (
-    <Accordion defaultIndex={[0]} allowMultiple={true} >
-      {cards}
-    </Accordion>
+    <Box 
+      p={4} 
+      borderRadius="xl" 
+      bg="rgba(0, 0, 0, 0.4)" 
+      backdropFilter="blur(8px)"
+      borderWidth="1px"
+      borderColor="var(--primary-color)"
+      boxShadow="0 0 25px rgba(0, 255, 255, 0.15)"
+    >
+      <Text 
+        fontSize="2xl" 
+        fontWeight="bold" 
+        mb={6} 
+        textAlign="center"
+        color="var(--primary-color)"
+        textShadow="0 0 10px rgba(0, 255, 255, 0.5)"
+      >
+        Your Minted NFTs
+      </Text>
+      <Accordion defaultIndex={[0]} allowMultiple={true}>
+        {cards}
+      </Accordion>
+    </Box>
   );
 };

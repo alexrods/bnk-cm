@@ -17,4 +17,4 @@ export const mintText = [
 export const image = "/simple-nft/collection.png";
 
 //website title
-export const headerText = "Bonk Game";
+export const headerText = "BONK GAMES";

@@ -377,7 +377,7 @@ const Timer = ({
   const seconds = remainingTime % BigInt(60);
   if (days > BigInt(0)) {
     return (
-      <Text fontSize="sm" fontWeight="bold">
+      <Text fontSize="xl" fontWeight="bold" mb={2} color="var(--primary-color)" textShadow="0 0 5px rgba(0, 255, 255, 0.5)">
         {days.toLocaleString("en-US", {
           minimumIntegerDigits: 2,
           useGrouping: false,
@@ -403,7 +403,7 @@ const Timer = ({
   }
   if (hours > BigInt(0)) {
     return (
-      <Text fontSize="sm" fontWeight="bold">
+      <Text fontSize="xl" fontWeight="bold" mb={2} color="var(--primary-color)" textShadow="0 0 5px rgba(0, 255, 255, 0.5)">
         {hours.toLocaleString("en-US", {
           minimumIntegerDigits: 2,
           useGrouping: false,
@@ -424,7 +424,7 @@ const Timer = ({
   }
   if (minutes > BigInt(0) || seconds > BigInt(0)) {
     return (
-      <Text fontSize="sm" fontWeight="bold">
+      <Text fontSize="xl" fontWeight="bold" mb={2} color="var(--primary-color)" textShadow="0 0 5px rgba(0, 255, 255, 0.5)">
         {minutes.toLocaleString("en-US", {
           minimumIntegerDigits: 2,
           useGrouping: false,
@@ -498,15 +498,6 @@ export function ButtonList({
   const [numberInputValues, setNumberInputValues] = useState<{
     [label: string]: number;
   }>({});
-
-  // Add periodic refresh of guards
-  // useEffect(() => {
-  //   const interval = setTimeout(() => {
-  //     checkEligibilityFunc();
-  //   }, 30000); // Refresh every 7 seconds
-
-  //   return () => clearInterval(interval);
-  // }, [checkEligibilityFunc]);
 
   if (!candyMachine || !candyGuard) {
     return <></>;
@@ -651,21 +642,23 @@ export function ButtonList({
       width="100%" 
       maxW="600px" 
       margin="0 auto"
-      bg="white"
+      bg="rgba(0, 0, 0, 0.7)"
       borderRadius="lg"
-      boxShadow="lg"
+      boxShadow="0 0 20px rgba(0, 255, 255, 0.3)"
       p={6}
+      border="2px solid var(--primary-color)"
+
     >
-      <VStack spacing={4} align="stretch">
+      <HStack spacing={4} mt={2} width="100%">
         {/* Timer Section */}
         <HStack justify="flex-end">
-          <Flex justifyContent="flex-end" alignItems={"center"}>
+          <Flex justifyContent="space-between" alignItems="center" width="100%">
             {buttonGuard.endTime > createBigInt(0) &&
               buttonGuard.endTime - solanaTime > createBigInt(0) &&
               (!buttonGuard.startTime ||
                 buttonGuard.startTime - solanaTime <= createBigInt(0)) && (
                 <>
-                  <Text fontSize="md" fontWeight="medium" color="gray.600" marginRight={"2"}>
+                  <Text fontSize="md" fontWeight="bold" color="var(--primary-color)" textShadow="0 0 5px rgba(0, 255, 255, 0.5)" marginRight={"2"} className="bonk-retro">
                     Ending in:{" "}
                   </Text>
                   <Timer
@@ -680,7 +673,7 @@ export function ButtonList({
               (!buttonGuard.endTime ||
                 solanaTime - buttonGuard.endTime <= createBigInt(0)) && (
                 <>
-                  <Text fontSize="md" fontWeight="medium" color="gray.600" marginRight={"2"}>
+                  <Text fontSize="md" fontWeight="bold" color="var(--primary-color)" textShadow="0 0 5px rgba(0, 255, 255, 0.5)" marginRight={"2"} className="bonk-retro">
                     Starting in:{" "}
                   </Text>
                   <Timer
@@ -694,37 +687,61 @@ export function ButtonList({
         </HStack>
 
         {/* Mint Info Section */}
-        <Box 
-          bg="gray.50" 
-          p={4} 
-          borderRadius="md"
-          borderWidth="1px"
-          borderColor="gray.200"
-          display={"flex"}
-          flexDirection={"column"}
-          gap={3}
+        <HStack 
+          borderRadius="md" 
+          overflow="hidden" 
+          borderWidth={2} 
+          borderColor="var(--primary-color)" 
+          width="100%"
+          bg="rgba(0, 0, 0, 0.7)"
+          boxShadow="0 0 10px rgba(0, 255, 255, 0.3)"
+          transition="all 0.3s ease"
+          _hover={{
+            boxShadow: "0 0 15px rgba(0, 255, 255, 0.5)"
+          }}
         >
           <Flex direction="column" gap={2}>
             <Flex alignItems="center" justifyContent="space-between">
-              <Text fontSize="lg" fontWeight="semibold" color="gray.700">
+              <Text fontSize="lg" fontWeight="bold" color="var(--primary-color)" textShadow="0 0 5px rgba(0, 255, 255, 0.5)" className="bonk-heading">
                 {buttonGuard.header}
               </Text>
-              <Text fontSize="md" color="gray.600">
+              <Text fontSize="md" color="white" fontWeight="medium" className="bonk-accent">
                 {buttonGuard.mintText}
               </Text>
             </Flex>
             {buttonGuard.tokenPriceText && (
               <Flex justifyContent="flex-end">
-                <Text fontSize="md" color="blue.600" fontWeight="medium">
+                <Text 
+                  fontSize="md" 
+                  color="var(--secondary-color)" 
+                  fontWeight="bold"
+                  textShadow="0 0 5px rgba(0, 255, 68, 0.5)"
+                  padding="2px 8px"
+                  borderRadius="md"
+                  bg="rgba(0, 20, 10, 0.6)"
+                  className="bonk-title"
+                >
                   {buttonGuard.tokenPriceText}
                 </Text>
               </Flex>
             )}
           </Flex>
-        </Box>
+        </HStack>
 
         {/* Mint Controls Section */}
-        <VStack spacing={4} align="stretch">
+        <HStack spacing={4} mt={2} width="100%" position="relative">
+          {/* Efecto de brillo detrás del botón */}
+          <Box
+            position="absolute"
+            width="100%"
+            height="100%"
+            borderRadius="md"
+            zIndex="0"
+            opacity="0.5"
+            filter="blur(20px)"
+            bg="rgba(0, 255, 255, 0.2)"
+            pointerEvents="none"
+          />
           {(process.env.NEXT_PUBLIC_MULTIMINT === "true" && buttonGuard.allowed) ? (
             <NumberInput
               value={numberInputValues[buttonGuard.label] || 1}
@@ -735,11 +752,37 @@ export function ButtonList({
               onChange={(valueAsString, valueAsNumber) =>
                 handleNumberInputChange(buttonGuard.label, valueAsNumber)
               }
+              borderColor="var(--primary-color)"
+              borderWidth="2px"
+              borderRadius="md"
+              _hover={{
+                borderColor: "var(--primary-color)",
+                boxShadow: "0 0 10px rgba(0, 255, 255, 0.5)"
+              }}
             >
-              <NumberInputField />
+              <NumberInputField 
+                bg="rgba(0, 0, 0, 0.7)" 
+                color="white"
+                textAlign="center"
+                fontWeight="bold"
+                _focus={{
+                  borderColor: "var(--primary-color)",
+                  boxShadow: "0 0 10px rgba(0, 255, 255, 0.5)"
+                }}
+              />
               <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
+                <NumberIncrementStepper 
+                  bg="rgba(0, 255, 255, 0.2)"
+                  color="white"
+                  borderColor="var(--primary-color)"
+                  _hover={{ bg: "var(--primary-color)", color: "black" }}
+                />
+                <NumberDecrementStepper 
+                  bg="rgba(0, 255, 255, 0.2)"
+                  color="white"
+                  borderColor="var(--primary-color)"
+                  _hover={{ bg: "var(--primary-color)", color: "black" }}
+                />
               </NumberInputStepper>
             </NumberInput>
           ) : null}
@@ -762,13 +805,17 @@ export function ButtonList({
                 checkEligibilityFunc,
                 refreshCandyMachineState
               )
-            }
+            } 
             key={buttonGuard.label}
             size="lg"
-            colorScheme="red"
-            height="60px"
+            bg="var(--primary-color)"
+            color="black"
+            height="70px"
             fontSize="xl"
-            fontWeight="bold"
+            fontWeight="extrabold"
+            textTransform="uppercase"
+            letterSpacing="wider"
+            className="bonk-retro"
             isDisabled={!buttonGuard.allowed}
             isLoading={
               guardList.find((elem) => elem.label === buttonGuard.label)
@@ -778,16 +825,51 @@ export function ButtonList({
               guardList.find((elem) => elem.label === buttonGuard.label)
                 ?.loadingText
             }
-            _hover={{
-              transform: "translateY(-2px)",
-              boxShadow: "lg",
+            position="relative"
+            boxShadow="0 0 15px rgba(0, 255, 255, 0.5)"
+            border="2px solid var(--primary-color)"
+            textShadow="0 0 3px rgba(0, 0, 0, 0.5)"
+            zIndex="1"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: "-100%",
+              width: "100%",
+              height: "100%",
+              background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)",
+              transition: "0.5s",
+              zIndex: -1
             }}
-            transition="all 0.2s"
+            _hover={{
+              transform: "translateY(-3px)",
+              boxShadow: "0 0 20px rgba(0, 255, 255, 0.8)",
+              bg: "white",
+              color: "var(--primary-color)",
+              textShadow: "0 0 5px rgba(0, 255, 255, 0.5)",
+              _before: {
+                left: "100%"
+              }
+            }}
+            _active={{
+              transform: "translateY(1px)",
+              boxShadow: "0 0 10px rgba(0, 255, 255, 0.5)"
+            }}
+            _disabled={{
+              opacity: 0.6,
+              bg: "gray.700",
+              color: "gray.400",
+              boxShadow: "none",
+              borderColor: "gray.600",
+              cursor: "not-allowed"
+            }}
+            transition="all 0.3s ease"
           >
             {buttonGuard.buttonLabel}
           </Button>
-        </VStack>
-      </VStack>
+        </HStack>
+      </HStack>
     </Box>
   );
 }

@@ -1,38 +1,39 @@
 :root {
   --max-width: 1100px;
-  --border-radius: 12px;
+  --border-radius: 10px;
   --font-mono: ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono',
     'Roboto Mono', 'Oxygen Mono', 'Ubuntu Monospace', 'Source Code Pro',
     'Fira Mono', 'Droid Sans Mono', 'Courier New', monospace;
+  --font-bonk-title: 'Audiowide', sans-serif;
+  --font-bonk-heading: 'Tektur', sans-serif;
 
-    --accent-rgb: 52, 211, 153;
-    --darker-accent-rgb: 0, 204, 150;
-    --on-accent-rgb: 0, 0, 0;
-
-    --foreground-rgb: 16, 24, 39;
-    --secondary-foreground-rgb: 107, 114, 128;
-
-    --background-rgb: 243, 244, 246;
-    --secondary-background-rgb: 249, 250, 251;
-    --tertiary-background-rgb: 209, 213, 219;
-    --hover-background-rgb: 243, 244, 246;
+  
+  /* BonkGames main colors */
+  --primary-color: #00ffff;
+  --primary-color-rgba: rgba(0, 255, 255, 0.8);
+  --primary-glow: 0 0 10px rgba(0, 255, 255, 0.5);
+  --primary-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+  
+  --secondary-color: #00ff44;
+  --secondary-color-rgba: rgba(0, 255, 68, 0.8);
+  
+  /* Accent colors */
+  --accent-rgb: 0, 255, 255;
+  --darker-accent-rgb: 0, 200, 200;
+  --on-accent-rgb: 0, 0, 0;
+  
+  /* Text colors */
+  --foreground-rgb: 255, 255, 255;
+  --secondary-foreground-rgb: 220, 220, 220;
+  
+  /* Background colors */
+  --background-rgb: 34, 38, 57;
+  --secondary-background-rgb: 30, 30, 50;
+  --tertiary-background-rgb: 40, 44, 69;
+  --hover-background-rgb: 45, 50, 75;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --accent-rgb: 3, 255, 189;
-    --darker-accent-rgb: 0, 204, 150;
-    --on-accent-rgb: 0, 0, 0;
-
-    --foreground-rgb: 255, 255, 255;
-    --secondary-foreground-rgb: 143, 143, 143;
-
-    --background-rgb: 18, 18, 18;
-    --secondary-background-rgb: 27, 27, 27;
-    --tertiary-background-rgb: 42, 42, 42;
-    --hover-background-rgb: 42, 42, 42;
-  }
-}
+/* BonkGames dark theme is set by default and used for all color schemes */
 
 * {
   box-sizing: border-box;
@@ -48,8 +49,62 @@ body {
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  background: rgb(10, 5, 20);
+  font-family: var(--font-bonk-heading), 'Arial', sans-serif;
+  background-attachment: fixed;
+  position: relative;
+  overflow-x: hidden;
 }
+
+/* Fondo con colores del juego */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(10, 5, 20, 0.9) 0%, rgba(40, 10, 60, 0.8) 100%);
+  z-index: -2;
+}
+
+/* Logo grande de BonkGames como fondo */
+body::after {
+  content: '';
+  position: fixed;
+  top: 25%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  background-image: url('/bonkgames-main-logo.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 200vh;
+  opacity: 0.35;
+  animation: color-shift 8s infinite linear;
+  z-index: -1;
+  pointer-events: none;
+  filter: brightness(1.2) contrast(1.2);
+}
+
+/* Eliminado el efecto de líneas de escaneo */
+
+@keyframes color-shift {
+  0% {
+    opacity: 0.5;
+    filter: hue-rotate(0deg) drop-shadow(0 0 25px rgba(255, 0, 255, 0.9)) brightness(1.2);
+  }
+  50% {
+    opacity: 0.5;
+    filter: hue-rotate(180deg) drop-shadow(0 0 25px rgba(0, 100, 255, 0.9)) brightness(1.2);
+  }
+  100% {
+    opacity: 0.5;
+    filter: hue-rotate(360deg) drop-shadow(0 0 25px rgba(255, 0, 255, 0.9)) brightness(1.2);
+  }
+}
+
+/* Eliminar duplicación */
 
 a {
   color: inherit;
@@ -64,12 +119,151 @@ a {
 
 button.wallet-adapter-button-trigger {
   cursor: pointer;
-  color: rgb(var(--foreground-rgb)) !important;
-  border: 1px solid rgb(var(--tertiary-background-rgb)) !important;
+  color: var(--primary-color) !important;
+  border: 2px solid var(--primary-color) !important;
   border-radius: var(--border-radius) !important;
-  background-color: rgb(var(--secondary-background-rgb)) !important;
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  padding: 8px 15px !important;
+  font-size: 14px !important;
+  transition: all 0.3s ease !important;
+  text-shadow: 0 0 5px var(--primary-color), 0 0 10px var(--primary-color) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+  text-transform: uppercase !important;
+  font-weight: bold !important;
+  letter-spacing: 1px !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+button.wallet-adapter-button-trigger::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent) !important;
+  transition: 0.5s !important;
+  pointer-events: none !important;
+}
+
+button.wallet-adapter-button-trigger:hover::after {
+  left: 100% !important;
 }
 
 button.wallet-adapter-button-trigger:hover {
-  background-color: rgb(var(--hover-background-rgb)) !important;
+  background-color: var(--button-hover-bg) !important;
+  color: white !important;
+  text-shadow: 0 0 8px var(--primary-color), 0 0 15px var(--primary-color) !important;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.8) !important;
+}
+
+/* Clases para aplicar las fuentes de BonkGames */
+.bonk-title {
+  font-family: var(--font-bonk-title);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+  animation: pulse-text 2s infinite alternate;
+}
+
+/* Estilo específico para el título principal de BonkGames */
+.bonk-games-logo {
+  font-family: var(--font-bonk-title);
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--bonk-title-color);
+  text-shadow: var(--bonk-title-shadow);
+  background: linear-gradient(180deg, #ff00ff, #9900ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  position: relative;
+  animation: neon-pulse 1.5s infinite alternate;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Eliminado efecto de líneas horizontales */
+
+.bonk-games-logo::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #ff00ff;
+  text-shadow: 2px 0 1px rgba(255, 0, 255, 0.6), -2px 0 1px rgba(0, 255, 255, 0.6);
+  z-index: 2;
+  opacity: 0.5;
+}
+
+@keyframes neon-pulse {
+  from {
+    text-shadow: 0 0 8px #ff00ff, 0 0 12px #ff00ff;
+    filter: brightness(0.9);
+  }
+  to {
+    text-shadow: 0 0 15px #ff00ff, 0 0 25px #ff00ff, 0 0 35px #ff00ff;
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes scan-lines {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 30px;
+  }
+}
+
+.bonk-heading {
+  font-family: var(--font-bonk-heading);
+  letter-spacing: 1px;
+  text-shadow: 0 0 5px var(--primary-color);
+}
+
+.bonk-accent {
+  font-family: var(--font-bonk-accent);
+  font-weight: normal;
+}
+
+.bonk-retro {
+  font-family: var(--font-bonk-retro);
+  font-size: 0.85em;
+  letter-spacing: -0.5px;
+}
+
+/* Animaciones de BonkGames */
+@keyframes pulse-text {
+  0% {
+    text-shadow: 0 0 7px var(--primary-color), 0 0 10px var(--primary-color);
+  }
+  100% {
+    text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color), 0 0 30px var(--primary-color);
+  }
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Eliminado el efecto de holograma glitch */
+
+button.wallet-adapter-button-trigger:hover {
+  color: white !important;
+  background-color: var(--primary-color) !important;
+  text-shadow: 0 0 5px #ffffff !important;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.8) !important;
+}
+
+button.wallet-adapter-button-trigger:hover::after {
+  left: 100% !important;
 }

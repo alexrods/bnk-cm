@@ -200,18 +200,22 @@ export default function Home() {
               }
           `}
         </style>
-        <Card>
+        <Card bg="rgba(20, 25, 45, 0.92)" border="1px solid var(--primary-color)" boxShadow="0 0 15px rgba(0, 255, 255, 0.3)" borderRadius="xl">
           <CardHeader>
             <Flex minWidth='max-content' alignItems='center' gap='2'>
-              <Box>
-                <Heading size='lg'>{headerText}</Heading>
+              <Box width="100%" textAlign="center">
+                <h1 className="bonk-games-logo" data-text={headerText}>{headerText}</h1>
               </Box>
               {loading ? (<></>) : (
                 <Flex justifyContent="flex-end" marginLeft="auto">
-                  <Box background={"red.200"} borderRadius={"5px"} minWidth={"50px"} minHeight={"50px"} p={2} >
+                  <Box background="rgba(0, 0, 0, 0.7)" borderRadius="5px" minWidth="50px" minHeight="50px" p={2} border="1px solid var(--primary-color)" boxShadow="0 0 10px rgba(0, 255, 255, 0.4)">
                     <VStack >
-                      <Text fontSize={"sm"}>Available NFTs:</Text>
-                      <Text fontWeight={"semibold"}>{Number(candyMachine?.data.itemsAvailable) - Number(candyMachine?.itemsRedeemed)}/{Number(candyMachine?.data.itemsAvailable)}</Text>
+                      <Text fontSize={"sm"} color="var(--primary-color)" textShadow="0 0 5px rgba(0, 255, 255, 0.7)" className="bonk-retro">
+                        Available NFTs:
+                      </Text>
+                      <Text fontWeight={"semibold"} color="white" textShadow="0 0 10px rgba(0, 255, 255, 0.9)" className="bonk-heading">
+                        {Number(candyMachine?.data.itemsAvailable) - Number(candyMachine?.itemsRedeemed)}/{Number(candyMachine?.data.itemsAvailable)}
+                      </Text>
                     </VStack>
                   </Box>
                 </Flex>
@@ -224,13 +228,31 @@ export default function Home() {
               <Center height={300}>
                 <Box
                   rounded={'lg'}
-                  pos={'relative'}>
+                  pos={'relative'}
+                  bg="rgba(0, 0, 0, 0.7)"
+                  p={3}
+                  borderRadius="lg"
+                  border="1px solid var(--primary-color)"
+                  boxShadow="0 0 15px rgba(0, 255, 255, 0.4)"
+                  _before={{
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 0, 255, 0.1) 100%)',
+                    borderRadius: 'lg',
+                    pointerEvents: 'none',
+                  }}
+                >
                   <Image
                     rounded={'lg'}
                     height={300}
                     objectFit={'cover'}
                     alt={"project Image"}
                     src={image}
+                    filter="drop-shadow(0 0 8px rgba(0, 255, 255, 0.5))"
                   />
                 </Box>
               </Center>
