@@ -224,8 +224,8 @@ export default function Home() {
           </CardHeader>
 
           <CardBody>
-            <Flex flexDirection={"column"} gap={10}>
-              <Center height={300}>
+            <Flex flexDirection={"column"} gap={{base: 5, md: 10}}>
+              <Center height={{base: 250, md: 300}}>
                 <Box
                   rounded={'lg'}
                   pos={'relative'}
@@ -256,7 +256,7 @@ export default function Home() {
                   />
                 </Box>
               </Center>
-              <Stack divider={<StackDivider />} spacing='8'>
+              <Stack divider={<StackDivider />} spacing={{base: 4, md: 8}}>
                 {loading ? (
                   <div>
                     <Divider my="10px" />
@@ -310,12 +310,33 @@ export default function Home() {
         }
 
         <Modal isOpen={isShowNftOpen} onClose={onShowNftClose}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Your minted NFT:</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <ShowNft nfts={mintsCreated} />
+          <ModalOverlay bg="rgba(0, 0, 0, 0.8)" />
+          <ModalContent 
+            bg="rgba(0, 0, 0, 0.9)" 
+            borderWidth="2px" 
+            borderColor="var(--primary-color)" 
+            borderRadius="xl"
+            maxW="85vw"
+          >
+            <ModalCloseButton 
+              color="var(--primary-color)"
+              bg="black" 
+              borderWidth="1px" 
+              borderColor="var(--primary-color)"
+              size="md"
+              mr={3}
+              mt={3}
+            />
+            <ModalBody py={8} px={6}>
+              {mintsCreated && mintsCreated.length > 0 ? (
+                <ShowNft nfts={mintsCreated} />
+              ) : (
+                <Box textAlign="center" p={6}>
+                  <Text color="var(--primary-color)" fontSize="lg" mb={4}>
+                    No NFTs minted yet or failed to load NFT data
+                  </Text>
+                </Box>
+              )}
             </ModalBody>
           </ModalContent>
         </Modal>
