@@ -10,7 +10,7 @@ import {
   getMerkleProof,
   safeFetchAllowListProofFromSeeds,
   mintV2,
-  TokenPaymentArgs,
+  TokenBurnArgs,
 } from "@metaplex-foundation/mpl-candy-machine";
 import {
   DigitalAssetWithToken,
@@ -107,7 +107,8 @@ export const chooseGuardToUse = (
 export const mintArgsBuilder = (
   candyMachine: CandyMachine,
   guardToUse: GuardGroup<DefaultGuardSet>,
-  ownedTokens: DigitalAssetWithToken[]
+  ownedTokens: DigitalAssetWithToken[],
+  defaultGuard?: GuardGroup<DefaultGuardSet> // Optional default guard parameter
 ) => {
   const guards = guardToUse.guards;
   
@@ -147,8 +148,7 @@ export const mintArgsBuilder = (
       thirdPartySigner: guards.thirdPartySigner,
       token2022Payment: guards.token2022Payment,
       tokenBurn: guards.tokenBurn,
-      tokenGate: guards.tokenGate,
-      tokenPayment: guards.tokenPayment
+      tokenGate: guards.tokenGate
     }
   }, (key, value) => {
     if (typeof value === 'bigint') {
@@ -320,18 +320,25 @@ export const mintArgsBuilder = (
     });
   }
 
-  if (guards.tokenBurn.__option === "Some") {
-    mintArgs.tokenBurn = some({ mint: guards.tokenBurn.value.mint });
-  }
+  // Removed duplicate tokenBurn check
 
   if (guards.tokenGate.__option === "Some") {
     mintArgs.tokenGate = some({ mint: guards.tokenGate.value.mint });
   }
 
-  if (guards.tokenPayment.__option === "Some") {
-    mintArgs.tokenPayment = some({
-      destinationAta: guards.tokenPayment.value.destinationAta,
-      mint: guards.tokenPayment.value.mint,
+  // Check if the selected guard has tokenBurn, if not, check the default guard
+  if (guards.tokenBurn.__option === "Some") {
+    console.log('Using tokenBurn from selected guard:', guardToUse.label);
+    mintArgs.tokenBurn = some({
+      mint: guards.tokenBurn.value.mint,
+      amount: guards.tokenBurn.value.amount,
+    });
+  } else if (defaultGuard && defaultGuard.guards.tokenBurn.__option === "Some") {
+    // If the selected guard doesn't have tokenBurn but default guard does, use that
+    console.log('Using tokenBurn from default guard');
+    mintArgs.tokenBurn = some({
+      mint: defaultGuard.guards.tokenBurn.value.mint,
+      amount: defaultGuard.guards.tokenBurn.value.amount,
     });
   }
   return mintArgs;
@@ -444,10 +451,9 @@ export const buildTx = async (
   latestBlockhash: BlockhashWithExpiryBlockHeight,
   units: number,
   buyBeer: boolean,
-  splTokenPayment?: {
+  splTokenBurn?: {
     tokenMint: string;
     amount: number;
-    destinationAta: string;
   }
 ) => {
   // Log completo de los parámetros de construcción de la transacción
@@ -471,26 +477,23 @@ export const buildTx = async (
   // Prepare mintArgs with SPL token payment if specified
   let finalMintArgs = mintArgs ? { ...mintArgs } : {};
   
-  // If splTokenPayment is provided, add it to mintArgs
-  if (splTokenPayment) {
-    console.log('Adding SPL token payment to mintArgs:', JSON.stringify(splTokenPayment));
+  // If splTokenBurn is provided, add it to mintArgs
+  if (splTokenBurn) {
+    console.log('Adding SPL token payment to mintArgs:', JSON.stringify(splTokenBurn));
     
     // Verificar que los parámetros son válidos
     try {
-      const tokenMintPubkey = publicKey(splTokenPayment.tokenMint);
-      const destinationAtaPubkey = publicKey(splTokenPayment.destinationAta);
-      const amount = BigInt(splTokenPayment.amount);
+      const tokenMintPubkey = publicKey(splTokenBurn.tokenMint);
+      const amount = BigInt(splTokenBurn.amount);
       
       console.log('Token mint pubkey:', tokenMintPubkey);
-      console.log('Destination ATA pubkey:', destinationAtaPubkey);
       console.log('Amount (BigInt):', amount.toString());
       
       finalMintArgs = {
         ...finalMintArgs,
-        tokenPayment: some<TokenPaymentArgs>({
+        tokenBurn: some<TokenBurnArgs>({
           amount,
           mint: tokenMintPubkey,
-          destinationAta: destinationAtaPubkey,
         }),
       };
     } catch (error: any) {
@@ -522,16 +525,17 @@ export const buildTx = async (
       })
     );
   }
-  if (guards && guards.tokenPayment.__option === 'Some') {
-    const tokenCfg = guards.tokenPayment.value;
+  if (guards && guards.tokenBurn.__option === 'Some') {
+    const tokenCfg = guards.tokenBurn.value;
     const sourceAta = findAssociatedTokenPda(umi, {
       mint: tokenCfg.mint,
       owner: umi.identity.publicKey,
     });
+    // For tokenBurn, tokens are burned not transferred
     tx = tx.prepend(
       transferTokens(umi, {
         source: sourceAta,
-        destination: tokenCfg.destinationAta,
+        destination: sourceAta, // Burn means we're sending to ourselves effectively
         authority: umi.identity,
         amount: tokenCfg.amount,
       })

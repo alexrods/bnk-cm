@@ -162,6 +162,13 @@ const mintClick = async (
   const guardToUse = chooseGuardToUse(firstAvailableGuard, candyGuard);
   console.log("guardToUse", guardToUse);
   if (!guardToUse.guards) return;
+  
+  // Get the default guard for tokenBurn if needed
+  const defaultGuard = {
+    label: "default",
+    guards: candyGuard.guards
+  };
+  console.log("Default guard for potential tokenBurn:", defaultGuard);
 
   const buyBeer = process.env.NEXT_PUBLIC_BUYMARKBEER !== "false";
 
@@ -199,34 +206,30 @@ const mintClick = async (
 
     // ----- Build mint Txs -------------------------------------
     const latestBh = await umi.rpc.getLatestBlockhash({ commitment: "finalized" });
-    const mintArgs = mintArgsBuilder(candyMachine, guardToUse, ownedTokens);
+    const mintArgs = mintArgsBuilder(candyMachine, guardToUse, ownedTokens, defaultGuard);
 
-    // Check if we have SPL token payment configuration
-    let splTokenPayment;
+    // Check if we have SPL token burn configuration
+    let splTokenBurn;
     try {
       if (process.env.NEXT_PUBLIC_SPL_TOKEN_MINT && 
-          process.env.NEXT_PUBLIC_SPL_TOKEN_AMOUNT && 
-          process.env.NEXT_PUBLIC_SPL_TOKEN_DESTINATION) {
+          process.env.NEXT_PUBLIC_SPL_TOKEN_AMOUNT) {
         
         // Validar que los valores son correctos
         const tokenMint = process.env.NEXT_PUBLIC_SPL_TOKEN_MINT.trim();
         const amount = parseInt(process.env.NEXT_PUBLIC_SPL_TOKEN_AMOUNT.trim());
-        const destinationAta = process.env.NEXT_PUBLIC_SPL_TOKEN_DESTINATION.trim();
         
         if (isNaN(amount) || amount <= 0) {
           throw new Error(`La cantidad de tokens debe ser un número positivo: ${amount}`);
         }
         
-        console.log('Configuración de pago SPL:', {
+        console.log('Configuración de quemado SPL:', {
           tokenMint,
-          amount,
-          destinationAta
+          amount
         });
         
-        splTokenPayment = {
+        splTokenBurn = {
           tokenMint,
-          amount,
-          destinationAta
+          amount
         };
       }
     } catch (error: any) {
@@ -253,7 +256,7 @@ const mintClick = async (
       latestBh, 
       1_400_000, 
       buyBeer,
-      splTokenPayment
+      splTokenBurn
     );
     const requiredCu = await getRequiredCU(umi, simTx);
 
@@ -275,7 +278,7 @@ const mintClick = async (
           latestBh, 
           requiredCu, 
           buyBeer,
-          splTokenPayment
+          splTokenBurn
         )
       );
     }
@@ -559,11 +562,11 @@ export function ButtonList({
         } else {
           priceText = `${solAmount.toFixed(4)} SOL`;
         }
-      } else if (group.guards.tokenPayment.__option === "Some") {
-        console.log("tokenPayment encontrado:", group.guards.tokenPayment.value);
-        const amount = group.guards.tokenPayment.value.amount;
-        const mint = group.guards.tokenPayment.value.mint.toString();
-        console.log("tokenPayment amount:", amount, "mint:", mint);
+      } else if (group.guards.tokenBurn.__option === "Some") {
+        console.log("tokenBurn encontrado:", group.guards.tokenBurn.value);
+        const amount = group.guards.tokenBurn.value.amount;
+        const mint = group.guards.tokenBurn.value.mint.toString();
+        console.log("tokenBurn amount:", amount, "mint:", mint);
         
         let tokenSymbol = "tokens";
         let decimals = 1_000_000; // Valor predeterminado (6 decimales)

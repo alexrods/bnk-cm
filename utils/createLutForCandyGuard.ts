@@ -133,13 +133,10 @@ export const getLutAddressesForCandyMachineAndGuard = async (
     }
     if (group.guards.tokenBurn.__option === "Some") {
       guardKeys.push(group.guards.tokenBurn.value.mint);
+      // Note: We don't add amount since it's a bigint, not a PublicKey
     }
     if (group.guards.tokenGate.__option === "Some") {
       guardKeys.push(group.guards.tokenGate.value.mint);
-    }
-    if (group.guards.tokenPayment.__option === "Some") {
-      guardKeys.push(group.guards.tokenPayment.value.mint);
-      guardKeys.push(group.guards.tokenPayment.value.destinationAta);
     }
   });
 

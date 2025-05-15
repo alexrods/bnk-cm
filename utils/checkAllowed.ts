@@ -15,7 +15,6 @@ import {
   StartDate,
   TokenBurn,
   TokenGate,
-  TokenPayment,
   getMerkleRoot,
 } from "@metaplex-foundation/mpl-candy-machine";
 import {
@@ -376,15 +375,15 @@ export const guardChecker = async (
       }
     }
 
-    if (singleGuard.tokenPayment.__option === "Some") {
-      const tokenPayment = singleGuard.tokenPayment as Some<TokenPayment>;
+    if (singleGuard.tokenBurn.__option === "Some") {
+      const tokenBurn = singleGuard.tokenBurn as Some<TokenBurn>;
       console.log(ownedTokens)
       const digitalAssetWithToken = ownedTokens?.find(
-        (el) => el.mint.publicKey === tokenPayment.value.mint
+        (el) => el.mint.publicKey === tokenBurn.value.mint
       );
       if (
         !digitalAssetWithToken ||
-        digitalAssetWithToken.token.amount < tokenPayment.value.amount
+        digitalAssetWithToken.token.amount < tokenBurn.value.amount
       ) {
         guardReturn.push({
           label: eachGuard.label,
@@ -392,17 +391,17 @@ export const guardChecker = async (
           reason: "Not enough tokens!",
           maxAmount: 0
         });
-        console.info(`${eachGuard.label} tokenPayment not enough tokens!`);
+        console.info(`${eachGuard.label} tokenBurn not enough tokens!`);
         continue;
       }
-      const payableAmount = tokenPayment.value.amount / digitalAssetWithToken.token.amount;
+      const payableAmount = tokenBurn.value.amount / digitalAssetWithToken.token.amount;
       mintableAmount = calculateMintable(mintableAmount, Number(payableAmount));
 
     }
 
     if (singleGuard.token2022Payment.__option === "Some") {
       const token2022Payment =
-        singleGuard.token2022Payment as Some<TokenPayment>;
+        singleGuard.token2022Payment as Some<TokenBurn>;
       const digitalAssetWithToken = ownedTokens?.find(
         (el) => el.mint.publicKey === token2022Payment.value.mint
       );

@@ -1,7 +1,7 @@
 import {
   FreezeTokenPayment,
   GuardSet,
-  TokenPayment,
+  TokenBurn,
 } from "@metaplex-foundation/mpl-candy-machine";
 import { fetchToken } from "@metaplex-foundation/mpl-toolbox";
 import { PublicKey, Some, Umi } from "@metaplex-foundation/umi";
@@ -14,9 +14,9 @@ export const checkAtaValid = (
     console.log("checkAtaValid")
   let atas: PublicKey[] = [];
   guards.forEach((guard) => {
-    if (guard.guards.tokenPayment.__option === "Some") {
-      let tokenPayment = guard.guards.tokenPayment as Some<TokenPayment>;
-      atas.push(tokenPayment.value.destinationAta);
+    if (guard.guards.tokenBurn.__option === "Some") {
+      let tokenBurn = guard.guards.tokenBurn as Some<TokenBurn>;
+      // Note: TokenBurn doesn't have destinationAta property
     }
     if (guard.guards.freezeTokenPayment.__option === "Some") {
       let freezeTokenPayment = guard.guards
