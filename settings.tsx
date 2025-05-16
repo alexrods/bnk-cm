@@ -5,12 +5,16 @@ export const mintText = [
   { label: "OG", mintText: "Mint Paying with ABC", buttonLabel: "Mint now!", header: "OG Mint" },
   { label: "publi", mintText: "Mint Paying with DEF", buttonLabel: "Mint now!", header: "Public Mint" },
   { label: "default", mintText: "Default Group", buttonLabel: "Mint now!", header: ""},
-  { label: "0", mintText: "Price: 0.05 SOL", buttonLabel: "Mint now!", header: "First Tier Price"},
-  { label: "1", mintText: "Price: 0.1 SOL", buttonLabel: "Mint now!", header: "Second Tier Price"},
-  { label: "2", mintText: "Price: 0.2 SOL", buttonLabel: "Mint now!", header: "Third Tier Price"},
-  { label: "3", mintText: "Price: 0.4 SOL", buttonLabel: "Mint now!", header: "Fourth Tier Price"},
-  { label: "4", mintText: "Price: 0.8 SOL", buttonLabel: "Mint now!", header: "Fifth Tier Price"},
-  { label: "5", mintText: "Price: 1.6 SOL", buttonLabel: "Mint now!", header: "Sixth Tier Price"},
+  { label: "0", mintText: "0.00 SOL", buttonLabel: "Mint now!", header: "OG"},
+  { label: "1", mintText: "0.10 SOL", buttonLabel: "Mint now!", header: "WL"},
+  { label: "2", mintText: "0.13 SOL", buttonLabel: "Mint now!", header: "Alpha"},
+  { label: "3", mintText: "0.17 SOL", buttonLabel: "Mint now!", header: "Sigma"},
+  { label: "4", mintText: "0.23 SOL", buttonLabel: "Mint now!", header: "Theta"},
+  { label: "5", mintText: "0.31 SOL", buttonLabel: "Mint now!", header: "Gamma"},
+  { label: "6", mintText: "0.41 SOL", buttonLabel: "Mint now!", header: "Delta"},
+  { label: "7", mintText: "0.55 SOL", buttonLabel: "Mint now!", header: "Epsilon"},
+  { label: "8", mintText: "0.73 SOL", buttonLabel: "Mint now!", header: "Zeta"},
+  { label: "9", mintText: "0.98 SOL", buttonLabel: "Mint now!", header: "Beta"},
 ];
 
 //header image in the ui. replace with your own

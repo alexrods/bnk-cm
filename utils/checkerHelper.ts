@@ -46,7 +46,7 @@ export const allocationChecker = async (
 }
 ) => {
   const allocation = guard.guards.allocation as Some<Allocation>;
-  console.log("allocationChecker", allocation.value);
+  // console.log("allocationChecker", allocation.value);
 
   try {
     const mintCounter = await safeFetchAllocationTrackerFromSeeds(umi, {
@@ -54,7 +54,7 @@ export const allocationChecker = async (
       candyMachine: candyMachine.publicKey,
       candyGuard: candyMachine.mintAuthority,
     });
-    console.log("mintCounter", mintCounter);
+    // console.log("mintCounter", mintCounter);
 
     if (mintCounter) {
       return allocation.value.limit - mintCounter.count;
@@ -71,7 +71,7 @@ export const allocationChecker = async (
     }
 
   } catch (error) {
-    console.error(`AllocationChecker: ${error}`);
+    // console.error(`AllocationChecker: ${error}`);
     return 0;
   }
 };
@@ -154,7 +154,7 @@ export const allowlistChecker = (
   guardlabel: string
 ) => {
   if (!allowLists.has(guardlabel)) {
-    console.error(`Guard ${guardlabel}; allowlist missing from allowlist.tsx`);
+    // console.error(`Guard ${guardlabel}; allowlist missing from allowlist.tsx`);
     return false;
   }
   if (
@@ -231,7 +231,7 @@ export const calculateMintable = (
   try {
     maxmintamount = Number(process.env.NEXT_PUBLIC_MAXMINTAMOUNT)
   } catch (e){
-    console.error('process.env.NEXT_PUBLIC_MAXMINTAMOUNT is not a number!', e)
+    // console.error('process.env.NEXT_PUBLIC_MAXMINTAMOUNT is not a number!', e)
     return mintableAmount;
   }
   if (mintableAmount > maxmintamount){

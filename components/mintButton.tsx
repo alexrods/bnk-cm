@@ -160,7 +160,7 @@ const mintClick = async (
   if (!firstAvailableGuard) return;
 
   const guardToUse = chooseGuardToUse(firstAvailableGuard, candyGuard);
-  console.log("guardToUse", guardToUse);
+  // console.log("guardToUse", guardToUse);
   if (!guardToUse.guards) return;
   
   // Get the default guard for tokenBurn if needed
@@ -168,7 +168,7 @@ const mintClick = async (
     label: "default",
     guards: candyGuard.guards
   };
-  console.log("Default guard for potential tokenBurn:", defaultGuard);
+  // console.log("Default guard for potential tokenBurn:", defaultGuard);
 
   const buyBeer = process.env.NEXT_PUBLIC_BUYMARKBEER !== "false";
 
@@ -222,10 +222,10 @@ const mintClick = async (
           throw new Error(`La cantidad de tokens debe ser un número positivo: ${amount}`);
         }
         
-        console.log('Configuración de quemado SPL:', {
-          tokenMint,
-          amount
-        });
+        // console.log('Configuración de quemado SPL:', {
+        //   tokenMint,
+        //   amount
+        // });
         
         splTokenBurn = {
           tokenMint,
@@ -233,7 +233,7 @@ const mintClick = async (
         };
       }
     } catch (error: any) {
-      console.error('Error al configurar el pago con SPL token:', error);
+      // console.error('Error al configurar el pago con SPL token:', error);
       createStandaloneToast().toast({
         title: "Error de configuración",
         description: `Error en la configuración de pago con tokens: ${error?.message || 'Desconocido'}`,
@@ -295,7 +295,7 @@ const mintClick = async (
       umi.rpc
         .sendTransaction(tx, { skipPreflight: true, maxRetries: 1, commitment: "finalized" })
         .then((sig) => {
-          console.log(`Tx ${i + 1}:`, base58.deserialize(sig)[0]);
+          // console.log(`Tx ${i + 1}:`, base58.deserialize(sig)[0]);
           return sig;
         })
     );
@@ -318,7 +318,7 @@ const mintClick = async (
       created.forEach(notifyTelegramBot);
       
       // Actualizar los datos de la Candy Machine después de un mint exitoso
-      console.log('Actualizando datos de Candy Machine después del mint...');
+      // console.log('Actualizando datos de Candy Machine después del mint...');
       
       // Actualizar manualmente el contador de NFTs
       if (refreshCandyMachineState) {
@@ -529,12 +529,12 @@ export function ButtonList({
     return <></>;
   }
 
+  // Obtener el texto del settings.tsx en lugar de calcularlo desde la guard
   const text = mintText.find((elem) => elem.label === firstAvailableGuard.label);
   const group = candyGuard.groups.find((elem) => elem.label === firstAvailableGuard.label);
   let startTime = createBigInt(0);
   let endTime = createBigInt(0);
   let mintLimit = 1;
-  let priceText = "";
   
   if (group) {
     if (group.guards.startDate.__option === "Some") {
@@ -547,91 +547,25 @@ export function ButtonList({
       mintLimit = group?.guards.mintLimit.value.limit;
     }
     
-    // Extraer información del precio
-    try {
-      console.log("Grupo:", group.label, "Guardas:", group.guards);
-      
-      if (group.guards.solPayment.__option === "Some") {
-        const lamports = group.guards.solPayment.value.lamports;
-        console.log("solPayment lamports:", lamports);
-        const solAmount = Number(lamports) / 1_000_000_000; // Convertir lamports a SOL
-        
-        if (isNaN(solAmount)) {
-          priceText = "0 SOL";
-          console.log("Error: solAmount es NaN", lamports);
-        } else {
-          priceText = `${solAmount.toFixed(4)} SOL`;
-        }
-      } else if (group.guards.tokenBurn.__option === "Some") {
-        console.log("tokenBurn encontrado:", group.guards.tokenBurn.value);
-        const amount = group.guards.tokenBurn.value.amount;
-        const mint = group.guards.tokenBurn.value.mint.toString();
-        console.log("tokenBurn amount:", amount, "mint:", mint);
-        
-        let tokenSymbol = "tokens";
-        let decimals = 1_000_000; // Valor predeterminado (6 decimales)
-        
-        // Verificar si es el token del .env
-        if (process.env.NEXT_PUBLIC_SPL_TOKEN_MINT && 
-            mint === process.env.NEXT_PUBLIC_SPL_TOKEN_MINT) {
-          tokenSymbol = "BONK";
-          decimals = 1_000_000; // Ajustar según los decimales del token
-        } else {
-          // Buscar nombres conocidos de tokens
-          const knownTokens: {[key: string]: {symbol: string, decimals: number}} = {
-            "HAn1csadvofYw6nqPPxtZd4A3Du5Q53AL7qS1mr1dDLF": {symbol: "BONK", decimals: 1_000_000},
-            // Puedes agregar más tokens conocidos aquí
-          };
-          
-          if (knownTokens[mint]) {
-            tokenSymbol = knownTokens[mint].symbol;
-            decimals = knownTokens[mint].decimals;
-          } else {
-            // Usar los últimos 4 caracteres de la dirección como identificador
-            tokenSymbol = mint.substring(mint.length - 4);
-          }
-        }
-        
-        const tokenAmount = Number(amount) / decimals;
-        console.log("Cantidad calculada:", tokenAmount, "con decimales:", decimals);
-        
-        if (isNaN(tokenAmount)) {
-          priceText = `Price: Error de cálculo (${mint})`;
-          console.log("Error: tokenAmount es NaN", amount);
-        } else {
-          priceText = `Price: ${tokenAmount.toLocaleString()} ${tokenSymbol}`;
-          // Añadir la dirección del token para referencia (versión corta)
-          const shortMint = `${mint.substring(0, 4)}...${mint.substring(mint.length - 4)}`;
-          priceText += ` (${shortMint})`;
-        }
-      } else if (group.guards.freezeSolPayment.__option === "Some") {
-        const lamports = group.guards.freezeSolPayment.value.lamports;
-        const solAmount = Number(lamports) / 1_000_000_000;
-        
-        if (isNaN(solAmount)) {
-          priceText = "Price: 0 SOL";
-          console.log("Error: freezeSolAmount es NaN", lamports);
-        } else {
-          priceText = `Price: ${solAmount.toFixed(4)} SOL`;
-        }
-      } else {
-        priceText = "Free";
-      }
-    } catch (error) {
-      console.error("Error calculando price:", error);
-      priceText = "Error al obtener price";
-    }
+    // Registrar información del grupo para depuración
+    // console.log("Grupo:", group.label, "Guardas:", group.guards);
   }
 
   // Añadiendo el precio en SDF como precio adicional
-  const tokenSdfPrice = "1 SDF";
+  const tokenSdfPrice = "1 $TICKET";
+  
+  // Obtener el texto del precio de settings.tsx
+  const solPriceText = text ? text.mintText : "mintText missing in settings.tsx";
+  
+  // Crear el texto combinado de precios
+  const combinedPriceText = `${tokenSdfPrice} + ${solPriceText}`;
   
   const buttonGuard: GuardButtonList = {
     label: firstAvailableGuard.label,
     allowed: firstAvailableGuard.allowed,
     header: text ? text.header : "header missing in settings.tsx",
-    mintText: priceText || (text ? text.mintText : "mintText missing in settings.tsx"),
-    tokenPriceText: tokenSdfPrice, // Nuevo campo para el precio en tokens
+    mintText: solPriceText, // Mantener para compatibilidad
+    tokenPriceText: combinedPriceText, // Ahora contiene la combinación de precios
     buttonLabel: text ? text.buttonLabel : "buttonLabel missing in settings.tsx",
     startTime,
     endTime,
@@ -704,30 +638,37 @@ export function ButtonList({
           }}
         >
           <Flex direction="column" gap={2}>
-            <Flex alignItems="center" justifyContent="space-between">
-              <Text fontSize="lg" fontWeight="bold" color="var(--primary-color)" textShadow="0 0 5px rgba(0, 255, 255, 0.5)" className="bonk-heading">
+            {/* Header centrado arriba */}
+            <Flex alignItems="center" justifyContent="center">
+              <Text 
+                fontSize="xl" 
+                fontWeight="extrabold" 
+                color="var(--primary-color)" 
+                textShadow="0 0 5px rgba(0, 255, 255, 0.5)" 
+                className="bonk-heading"
+                textAlign="center"
+                letterSpacing="wider"
+              >
                 {buttonGuard.header}
               </Text>
-              <Text fontSize="md" color="white" fontWeight="medium" className="bonk-accent">
-                {buttonGuard.mintText}
+            </Flex>
+            
+            {/* Precio combinado abajo */}
+            <Flex justifyContent="center" mt={1}>
+              <Text 
+                fontSize="md" 
+                color="var(--secondary-color)" 
+                fontWeight="bold"
+                textShadow="0 0 5px rgba(0, 255, 68, 0.5)"
+                padding="4px 10px"
+                borderRadius="md"
+                bg="rgba(0, 20, 10, 0.6)"
+                className="bonk-title"
+                textAlign="center"
+              >
+                {buttonGuard.tokenPriceText}
               </Text>
             </Flex>
-            {buttonGuard.tokenPriceText && (
-              <Flex justifyContent="flex-end">
-                <Text 
-                  fontSize="md" 
-                  color="var(--secondary-color)" 
-                  fontWeight="bold"
-                  textShadow="0 0 5px rgba(0, 255, 68, 0.5)"
-                  padding="2px 8px"
-                  borderRadius="md"
-                  bg="rgba(0, 20, 10, 0.6)"
-                  className="bonk-title"
-                >
-                  {buttonGuard.tokenPriceText}
-                </Text>
-              </Flex>
-            )}
           </Flex>
         </HStack>
 

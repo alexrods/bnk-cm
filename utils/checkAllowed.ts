@@ -142,7 +142,7 @@ export const guardChecker = async (
           reason: "Allocation of this guard reached",
           maxAmount: 0
         });
-        console.info(`Guard ${eachGuard.label}; allocation reached`);
+        // console.info(`Guard ${eachGuard.label}; allocation reached`);
         continue;
       }
     }
@@ -155,7 +155,7 @@ export const guardChecker = async (
           reason: "Wallet not allowlisted",
           maxAmount: 0
         });
-        console.info(`Guard ${eachGuard.label} wallet not allowlisted!`);
+        // console.info(`Guard ${eachGuard.label} wallet not allowlisted!`);
         continue;
       }
     }
@@ -169,7 +169,7 @@ export const guardChecker = async (
           reason: "Mint time is over!",
           maxAmount: 0
         });
-        console.info(`Guard ${eachGuard.label}; endDate reached!`);
+        // console.info(`Guard ${eachGuard.label}; endDate reached!`);
         continue;
       }
     }
@@ -187,9 +187,9 @@ export const guardChecker = async (
           reason: "Not enough SOL",
           maxAmount: 0
         });
-        console.info(
-          `Guard ${eachGuard.label}; freezeSolPayment: not enough SOL`
-        );
+        // console.info(
+        //   `Guard ${eachGuard.label}; freezeSolPayment: not enough SOL`
+        // );
         continue;
       }
     }
@@ -204,7 +204,7 @@ export const guardChecker = async (
           reason: "Mint limit of this wallet reached",
           maxAmount: 0
         });
-        console.info(`Guard ${eachGuard.label}; mintLimit reached`);
+        // console.info(`Guard ${eachGuard.label}; mintLimit reached`);
         continue;
       }
     }
@@ -225,7 +225,7 @@ export const guardChecker = async (
           reason: "Not enough tokens!",
           maxAmount: 0
         });
-        console.info(`${eachGuard.label}: Token Balance too low !`);
+        // console.info(`${eachGuard.label}: Token Balance too low !`);
         continue;
       } else {
         const payableAmount = freezeTokenPayment.value.amount / digitalAssetWithToken.token.amount;
@@ -244,7 +244,7 @@ export const guardChecker = async (
           reason: "No NFT to burn!",
           maxAmount: 0
         });
-        console.info(`${eachGuard.label}: No Nft to burn!`);
+        //  console.info(`${eachGuard.label}: No Nft to burn!`);
         continue;
       }
     }
@@ -258,7 +258,7 @@ export const guardChecker = async (
           reason: "No NFT of the requred held!",
           maxAmount: 0
         });
-        console.info(`${eachGuard.label}: NftGate no NFT held!`);
+        // console.info(`${eachGuard.label}: NftGate no NFT held!`);
         continue;
       }
     }
@@ -274,7 +274,7 @@ export const guardChecker = async (
           reason: "No NFT to pay with!",
           maxAmount: 0
         });
-        console.info(`${eachGuard.label}: nftPayment no NFT to pay with`);
+        // console.info(`${eachGuard.label}: nftPayment no NFT to pay with`);
         continue;
       }
     }
@@ -291,9 +291,9 @@ export const guardChecker = async (
           reason: "Too many NFTs redeemed!",
           maxAmount: 0
         });
-        console.info(
-          `${eachGuard.label}: redeemedAmount Too many NFTs redeemed!`
-        );
+        // console.info(
+        //   `${eachGuard.label}: redeemedAmount Too many NFTs redeemed!`
+        // );
         continue;
       }
     }
@@ -313,7 +313,7 @@ export const guardChecker = async (
           reason: "Not enough SOL!",
           maxAmount: 0
         });
-        console.info(`${eachGuard.label} SolPayment not enough SOL!`);
+        // console.info(`${eachGuard.label} SolPayment not enough SOL!`);
         continue;
       }
     }
@@ -327,7 +327,7 @@ export const guardChecker = async (
           reason: "StartDate not reached!",
           maxAmount: 0
         });
-        console.info(`${eachGuard.label} StartDate not reached!`);
+        // console.info(`${eachGuard.label} StartDate not reached!`);
 
         continue;
       }
@@ -348,7 +348,7 @@ export const guardChecker = async (
           reason: "Not enough tokens!",
           maxAmount: 0
         });
-        console.info(`${eachGuard.label} tokenBurn not enough tokens!`);
+        // console.info(`${eachGuard.label} tokenBurn not enough tokens!`);
         continue;
       }
       const payableAmount = tokenBurn.value.amount / digitalAssetWithToken.token.amount;
@@ -370,14 +370,14 @@ export const guardChecker = async (
           reason: "Not enough tokens!",
           maxAmount: 0
         });
-        console.info(`${eachGuard.label} tokenGate not enough tokens!`);
+        // console.info(`${eachGuard.label} tokenGate not enough tokens!`);
         continue;
       }
     }
 
     if (singleGuard.tokenBurn.__option === "Some") {
       const tokenBurn = singleGuard.tokenBurn as Some<TokenBurn>;
-      console.log(ownedTokens)
+      // console.log(ownedTokens)
       const digitalAssetWithToken = ownedTokens?.find(
         (el) => el.mint.publicKey === tokenBurn.value.mint
       );
@@ -391,7 +391,7 @@ export const guardChecker = async (
           reason: "Not enough tokens!",
           maxAmount: 0
         });
-        console.info(`${eachGuard.label} tokenBurn not enough tokens!`);
+        // console.info(`${eachGuard.label} tokenBurn not enough tokens!`);
         continue;
       }
       const payableAmount = tokenBurn.value.amount / digitalAssetWithToken.token.amount;
@@ -415,7 +415,7 @@ export const guardChecker = async (
           reason: "Not enough tokens!",
           maxAmount: 0
         });
-        console.info(`${eachGuard.label} token2022Payment not enough tokens!`);
+        // console.info(`${eachGuard.label} token2022Payment not enough tokens!`);
         continue;
       }
       const payableAmount = token2022Payment.value.amount / digitalAssetWithToken.token.amount;

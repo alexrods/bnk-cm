@@ -46,7 +46,7 @@ export const useCandyMachineSocket = (
       try {
         candyGuard = await safeFetchCandyGuard(umi, candyMachine.mintAuthority);
       } catch (e) {
-        console.error('Error fetching candy guard:', e);
+        // console.error('Error fetching candy guard:', e);
       }
 
       // Calculate items remaining
@@ -55,11 +55,11 @@ export const useCandyMachineSocket = (
       const itemsRedeemed = Number(candyMachine.itemsRedeemed);
       const itemsRemaining = itemsAvailable - itemsRedeemed;
 
-      console.log('Candy Machine actualizada:', {
-        itemsAvailable,
-        itemsRedeemed,
-        itemsRemaining
-      });
+      // console.log('Candy Machine actualizada:', {
+      //   itemsAvailable,
+      //   itemsRedeemed,
+      //   itemsRemaining
+      // });
 
       setState({
         candyMachine,
