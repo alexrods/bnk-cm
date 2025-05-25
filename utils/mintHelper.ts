@@ -35,10 +35,8 @@ import {
   setComputeUnitPrice,
   setComputeUnitLimit,
   transferSol,
-  transferTokens,
 } from "@metaplex-foundation/mpl-toolbox";
 import { toWeb3JsTransaction } from "@metaplex-foundation/umi-web3js-adapters";
-import { findAssociatedTokenPda } from "@metaplex-foundation/mpl-toolbox";
 
 export interface GuardButtonList extends GuardReturn {
   header: string;
@@ -54,31 +52,17 @@ export const chooseGuardToUse = (
   guard: GuardReturn,
   candyGuard: CandyGuard
 ) => {
-  // Log de la estructura completa de la CandyMachine y sus guards
-  console.log('ESTRUCTURA COMPLETA DE CANDYGUARD:', JSON.stringify({
-    publicKey: candyGuard?.publicKey,
-    guards: candyGuard?.guards,
-    groups: candyGuard?.groups,
-    availableGroups: candyGuard?.groups?.map(g => g.label) || [],
-    selectedGuard: guard.label
-  }, (key, value) => {
-    if (typeof value === 'bigint') {
-      return value.toString();
-    }
-    return value;
-  }, 2));
   let guardGroup = candyGuard?.groups.find(
     (item) => item.label === guard.label
   );
   if (guardGroup) {
-    console.log('Guard configuration for group:', guard.label);
-    console.log('Guard details:', JSON.stringify(guardGroup.guards, (key, value) => {
-      // Convertir BigInt a string para que sea serializable
-      if (typeof value === 'bigint') {
-        return value.toString();
-      }
-      return value;
-    }, 2));
+    // console.log('Guard details:', JSON.stringify(guardGroup.guards, (key, value) => {
+    //   // Convertir BigInt a string para que sea serializable
+    //   if (typeof value === 'bigint') {
+    //     return value.toString();
+    //   }
+    //   return value;
+    // }, 2));
     return guardGroup;
   }
 
@@ -111,51 +95,41 @@ export const mintArgsBuilder = (
   defaultGuard?: GuardGroup<DefaultGuardSet> // Optional default guard parameter
 ) => {
   const guards = guardToUse.guards;
-  
-  // Imprimir la configuración completa de la guard que se está utilizando
-  console.log(`Building mint args for guard group: ${guardToUse.label}`);
-  console.log('Complete guard configuration:', JSON.stringify(guards, (key, value) => {
-    // Convertir BigInt a string para que sea serializable
-    if (typeof value === 'bigint') {
-      return value.toString();
-    }
-    return value;
-  }, 2));
-  
+
   let ruleset = undefined;
   if (candyMachine.ruleSet.__option === "Some") {
     ruleset = candyMachine.ruleSet.value;
   }
 
   // Log de la guard completa con todas sus propiedades
-  console.log('GUARD COMPLETA:', JSON.stringify({
-    label: guardToUse.label,
-    guards: {
-      addressGate: guards.addressGate,
-      allocation: guards.allocation,
-      allowList: guards.allowList,
-      endDate: guards.endDate,
-      freezeSolPayment: guards.freezeSolPayment,
-      freezeTokenPayment: guards.freezeTokenPayment,
-      gatekeeper: guards.gatekeeper,
-      mintLimit: guards.mintLimit,
-      nftBurn: guards.nftBurn,
-      nftGate: guards.nftGate,
-      nftPayment: guards.nftPayment,
-      redeemedAmount: guards.redeemedAmount,
-      solPayment: guards.solPayment,
-      startDate: guards.startDate,
-      thirdPartySigner: guards.thirdPartySigner,
-      token2022Payment: guards.token2022Payment,
-      tokenBurn: guards.tokenBurn,
-      tokenGate: guards.tokenGate
-    }
-  }, (key, value) => {
-    if (typeof value === 'bigint') {
-      return value.toString();
-    }
-    return value;
-  }, 2));
+  // console.log('GUARD COMPLETA:', JSON.stringify({
+  //   label: guardToUse.label,
+  //   guards: {
+  //     addressGate: guards.addressGate,
+  //     allocation: guards.allocation,
+  //     allowList: guards.allowList,
+  //     endDate: guards.endDate,
+  //     freezeSolPayment: guards.freezeSolPayment,
+  //     freezeTokenPayment: guards.freezeTokenPayment,
+  //     gatekeeper: guards.gatekeeper,
+  //     mintLimit: guards.mintLimit,
+  //     nftBurn: guards.nftBurn,
+  //     nftGate: guards.nftGate,
+  //     nftPayment: guards.nftPayment,
+  //     redeemedAmount: guards.redeemedAmount,
+  //     solPayment: guards.solPayment,
+  //     startDate: guards.startDate,
+  //     thirdPartySigner: guards.thirdPartySigner,
+  //     token2022Payment: guards.token2022Payment,
+  //     tokenBurn: guards.tokenBurn,
+  //     tokenGate: guards.tokenGate
+  //   }
+  // }, (key, value) => {
+  //   if (typeof value === 'bigint') {
+  //     return value.toString();
+  //   }
+  //   return value;
+  // }, 2));
   
   let mintArgs: Partial<DefaultGuardSetMintArgs> = {};
   if (guards.allocation.__option === "Some") {
@@ -352,15 +326,6 @@ export const routeBuilder = async (
 ) => {
   let tx2 = transactionBuilder();
 
-  // Log completo de todas las guards disponibles en este punto
-  console.log('GUARDS DISPONIBLES EN ROUTEBUILDER:', JSON.stringify({
-    guardLabel: guardToUse.label,
-    guardTypes: Object.keys(guardToUse.guards).filter(key => guardToUse.guards[key].__option === "Some"),
-    candyMachinePublicKey: candyMachine.publicKey,
-    candyMachineMintAuthority: candyMachine.mintAuthority,
-    userPublicKey: umi.identity.publicKey
-  }, null, 2));
-
   if (guardToUse.guards.allowList.__option === "Some") {
     console.log(`Processing allowList guard for group: ${guardToUse.label}`);
     console.log('AllowList guard configuration:', JSON.stringify(guardToUse.guards.allowList, (key, value) => {
@@ -376,9 +341,6 @@ export const routeBuilder = async (
       return tx2;
     }
     
-    // Log de la lista de direcciones permitidas
-    console.log(`AllowList para ${guardToUse.label} contiene ${allowlist.length} direcciones`);
-    console.log('Usuario actual está en la lista:', allowlist.includes(publicKey(umi.identity)));
     const allowListProof = await safeFetchAllowListProofFromSeeds(umi, {
       candyGuard: candyMachine.mintAuthority,
       candyMachine: candyMachine.publicKey,
@@ -457,7 +419,7 @@ export const buildTx = async (
   }
 ) => {
   // Log completo de los parámetros de construcción de la transacción
-  console.log('CONSTRUYENDO TRANSACCIÓN DE MINT:', JSON.stringify({
+  console.log('BUILDING TRANSACTION:', JSON.stringify({
     candyMachinePublicKey: candyMachine.publicKey,
     collectionMint: candyMachine.collectionMint,
     guardLabel: guardToUse.label,
@@ -486,9 +448,6 @@ export const buildTx = async (
       const tokenMintPubkey = publicKey(splTokenBurn.tokenMint);
       const amount = BigInt(splTokenBurn.amount);
       
-      console.log('Token mint pubkey:', tokenMintPubkey);
-      console.log('Amount (BigInt):', amount.toString());
-      
       finalMintArgs = {
         ...finalMintArgs,
         tokenBurn: some<TokenBurnArgs>({
@@ -497,8 +456,8 @@ export const buildTx = async (
         }),
       };
     } catch (error: any) {
-      console.error('Error al procesar los parámetros de pago SPL:', error);
-      throw new Error(`Error en los parámetros de pago SPL: ${error?.message || 'Desconocido'}`);
+      console.error('Error processing SPL token burn:', error);
+      throw new Error(`Error processing SPL token burn: ${error?.message || 'Unknown'}`);
     }
   }
 
@@ -514,33 +473,7 @@ export const buildTx = async (
       tokenStandard: candyMachine.tokenStandard,
     })
   );
-  // Process guard payments
-  const guards = guardToUse.guards;
-  if (guards && guards.solPayment.__option === 'Some') {
-    const solCfg = guards.solPayment.value;
-    tx = tx.prepend(
-      transferSol(umi, {
-        destination: solCfg.destination,
-        amount: solCfg.lamports,
-      })
-    );
-  }
-  if (guards && guards.tokenBurn.__option === 'Some') {
-    const tokenCfg = guards.tokenBurn.value;
-    const sourceAta = findAssociatedTokenPda(umi, {
-      mint: tokenCfg.mint,
-      owner: umi.identity.publicKey,
-    });
-    // For tokenBurn, tokens are burned not transferred
-    tx = tx.prepend(
-      transferTokens(umi, {
-        source: sourceAta,
-        destination: sourceAta, // Burn means we're sending to ourselves effectively
-        authority: umi.identity,
-        amount: tokenCfg.amount,
-      })
-    );
-  }
+
   if (buyBeer) {
     tx = tx.prepend(
       transferSol(umi, {

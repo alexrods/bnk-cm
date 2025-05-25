@@ -1,7 +1,7 @@
 import { JsonMetadata } from "@metaplex-foundation/mpl-token-metadata";
 import { PublicKey } from "@metaplex-foundation/umi";
-import { Box, Text, Divider, SimpleGrid, VStack, Center, Button } from "@chakra-ui/react";
-import React from "react";
+import { Box, Text, Divider, SimpleGrid, VStack, Center, Button, Skeleton, Fade } from "@chakra-ui/react";
+import React, { useMemo, memo } from "react";
 import {
   Accordion,
   AccordionItem,
@@ -18,7 +18,9 @@ interface TraitProps {
 interface TraitsProps {
   metadata: JsonMetadata;
 }
-const Trait = ({ heading, description }: TraitProps) => {
+
+// Memoizamos el componente Trait para evitar re-renderizaciones innecesarias
+const Trait = memo(({ heading, description }: TraitProps) => {
   return (
     <Box
       backgroundColor={"rgba(0, 0, 0, 0.7)"}
@@ -55,14 +57,15 @@ const Trait = ({ heading, description }: TraitProps) => {
       </VStack>
     </Box>
   );
-};
+});
 
-const Traits = ({ metadata }: TraitsProps) => {
+// Memoizamos el componente Traits para evitar re-renderizaciones innecesarias
+const Traits = memo(({ metadata }: TraitsProps) => {
   if (metadata === undefined || metadata.attributes === undefined) {
     return <></>;
   }
 
-  //find all attributes with trait_type and value
+  // Encontrar todos los atributos con trait_type y value
   const traits = metadata.attributes.filter(
     (a) => a.trait_type !== undefined && a.value !== undefined
   );
@@ -97,20 +100,51 @@ const Traits = ({ metadata }: TraitsProps) => {
       </SimpleGrid>
     </>
   );
+});
+
+// Componente LoadingCard para mostrar durante la carga de metadatos
+const LoadingCard = () => {
+  return (
+    <Box 
+      position={"relative"} 
+      width={"full"} 
+      overflow={"hidden"}
+      borderRadius="lg"
+      bg="rgba(0, 0, 0, 0.6)"
+      p={{base: 2, sm: 3, md: 4}}
+      transition="all 0.1s ease"
+    >
+      <Skeleton
+        height={{base: "200px", md: "300px"}}
+        width="100%"
+        startColor="rgba(100, 100, 100, 0.3)"
+        endColor="rgba(200, 200, 200, 0.3)"
+        borderRadius="md"
+        mb={4}
+      />
+      <Skeleton height="24px" width="70%" mb={2} />
+      <Skeleton height="16px" width="90%" mb={1} />
+      <Skeleton height="16px" width="80%" mb={3} />
+      <Skeleton height="120px" width="100%" />
+    </Box>
+  );
 };
 
-export default function Card({
+// Componente Card memoizado para evitar re-renderizaciones innecesarias
+const Card = memo(function Card({
   metadata,
+  loading = false,
 }: {
   metadata: JsonMetadata | undefined;
+  loading?: boolean;
 }) {
-  console.log('Card component received metadata:', metadata);
-  // Get the images from the metadata if animation_url is present use this
-  if (!metadata) {
-    return <Box p={4} textAlign="center">No NFT metadata available</Box>;
+  // Si está cargando o no hay metadatos, mostramos un estado de carga
+  if (loading || !metadata) {
+    return loading ? <LoadingCard /> : <Box p={4} textAlign="center">No NFT metadata available</Box>;
   }
-  const image = metadata.animation_url ?? metadata.image;
-  console.log('NFT image URL:', image);
+  
+  // Evitamos cálculos repetidos
+  const image = useMemo(() => metadata.animation_url ?? metadata.image, [metadata]);
   
   return (
     <Box 
@@ -188,22 +222,40 @@ export default function Card({
       <Traits metadata={metadata} />
     </Box>
   );
-}
+});
 
+// Definición de las propiedades para el componente ShowNft
 type Props = {
   nfts:
-    | { mint: PublicKey; offChainMetadata: JsonMetadata | undefined }[]
+    | { 
+        mint: PublicKey; 
+        offChainMetadata: JsonMetadata | undefined;
+        loading?: boolean;
+        error?: boolean;
+      }[]
     | undefined;
 };
 
-export const ShowNft = ({ nfts }: Props) => {
+// Componente principal para mostrar los NFTs
+export const ShowNft = memo(({ nfts }: Props) => {
   if (nfts === undefined) {
     return <></>;
   }
 
-  console.log('Rendering NFTs:', nfts);
-  // Ya no necesitamos crear cards para Accordion
-  console.log('Renderizando NFTs directamente:', nfts);
+  // Usamos useMemo para prevenir re-renderizaciones innecesarias
+  const nftCards = useMemo(() => {
+    return nfts.map((nft) => (
+      <Fade in={true} key={nft.mint.toString()}>
+        <Box mb={6}>
+          <Card 
+            metadata={nft.offChainMetadata} 
+            loading={nft.loading === true} 
+          />
+        </Box>
+      </Fade>
+    ));
+  }, [nfts]);
+
   return (
     <Box 
       p={{base: 2, sm: 3, md: 4}}
@@ -222,12 +274,8 @@ export const ShowNft = ({ nfts }: Props) => {
         Your Minted NFTs
       </Text>
       
-      {/* Mostrando los NFTs directamente sin Accordion */}
-      {nfts.map((nft) => (
-        <Box key={nft.mint.toString()} mb={6}>
-          <Card metadata={nft.offChainMetadata} />
-        </Box>
-      ))}
+      {/* Mostrando los NFTs memoizados */}
+      {nftCards}
       
       <Center mt={8}>
         <Button
@@ -256,4 +304,6 @@ export const ShowNft = ({ nfts }: Props) => {
       </Center>
     </Box>
   );
-};
+});
+
+export default Card;

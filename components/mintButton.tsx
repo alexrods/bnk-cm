@@ -76,32 +76,6 @@ const safeErrorToString = (e: unknown): string => {
   return JSON.stringify(e);
 };
 
-// Aviso a bot de Telegram cuando se acuña un NFT
-const notifyTelegramBot = async (nftData: {
-  mint: PublicKey;
-  offChainMetadata: JsonMetadata;
-}) => {
-  try {
-    const res = await fetch("http://localhost:9031/api/nft-minted", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        image: nftData.offChainMetadata.image,
-        name: nftData.offChainMetadata.name,
-        description: nftData.offChainMetadata.description,
-        symbol: nftData.offChainMetadata.symbol,
-        external_url: nftData.offChainMetadata.external_url,
-        collection: nftData.offChainMetadata.collection,
-        attributes: nftData.offChainMetadata.attributes,
-      }),
-    });
-    if (!res.ok) throw new Error("Failed to notify Telegram bot");
-    console.log("✅ Telegram bot notificado");
-  } catch (err) {
-    console.error("Telegram bot error:", err);
-  }
-};
-
 // --------------------------------------------------
 // Helper UI
 // --------------------------------------------------
@@ -118,21 +92,22 @@ const updateLoadingText = (
   setGuardList(next);
 };
 
-const fetchNft = async (umi: Umi, mint: PublicKey) => {
+const fetchNftMetadata = async (umi: Umi, mintAddress: string) => {
   try {
-    const da = await fetchDigitalAsset(umi, mint);
-    const jm = await fetchJsonMetadata(umi, da.metadata.uri);
-    return { digitalAsset: da, jsonMetadata: jm };
-  } catch (e) {
-    console.error(e);
-    createStandaloneToast().toast({
-      title: "NFT could not be fetched!",
-      description: "Check your wallet instead.",
-      status: "info",
-      duration: 2000,
-      isClosable: true,
-    });
-    return { digitalAsset: undefined, jsonMetadata: undefined };
+    // Obtener el NFT por su dirección
+    const nft = await fetchDigitalAsset(umi, mintAddress as any);
+    if (!nft) return null;
+    
+    // Si tiene JSON URI, obtener los metadatos
+    if (nft.metadata.uri) {
+      const response = await fetch(nft.metadata.uri);
+      if (!response.ok) return null;
+      return await response.json();
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching metadata:", error);
+    return null;
   }
 };
 
@@ -305,37 +280,90 @@ const mintClick = async (
 
     const okMints = await verifyTx(umi, sigs, latestBh, "finalized");
 
-    // ----- Fetch metadata -------------------------------------
-    const created: { mint: PublicKey; offChainMetadata: JsonMetadata }[] = [];
-    for (const m of okMints) {
-      const data = await fetchNft(umi, m);
-      if (data.digitalAsset && data.jsonMetadata) created.push({ mint: m, offChainMetadata: data.jsonMetadata });
-    }
+    // Mostramos un toast de éxito para el minteo completado
+    createStandaloneToast().toast({
+      title: "Mint successful!",
+      description: `${okMints.length} NFT(s) minted successfully!`,
+      status: "success",
+      duration: 5000,
+      isClosable: true,
+    });
 
-    if (created.length) {
-      setMintsCreated(created);
-      onOpen();
-      created.forEach(notifyTelegramBot);
-      
-      // Actualizar los datos de la Candy Machine después de un mint exitoso
-      // console.log('Actualizando datos de Candy Machine después del mint...');
-      
-      // Actualizar manualmente el contador de NFTs
-      if (refreshCandyMachineState) {
-        refreshCandyMachineState();
-      } else {
-        // Si la función de actualización no está disponible, forzar una actualización de elegibilidad
-        setCheckEligibility(false);
-        setTimeout(() => {
-          setCheckEligibility(true);
-        }, 1000);
-      }
-      
-      // Forzar una actualización de la interfaz
-      setTimeout(() => {
-        checkEligibilityFunc();
-      }, 2000);
+    // Actualizamos el texto de carga
+    updateLoadingText("Loading NFT metadata...", guardList, guardToUse.label, setGuardList);
+    
+    // Mostramos un toast para la carga de metadatos
+    const loadMetadataToast = createStandaloneToast().toast({
+      title: "Loading NFT metadata",
+      description: "Retrieving your NFT information... Please wait a moment.",
+      status: "info",
+      duration: null,
+      isClosable: false,
+    });
+    
+    // Actualizamos el contador de NFTs sin esperar la carga de metadatos
+    if (refreshCandyMachineState) {
+      refreshCandyMachineState();
     }
+    
+    // Cargamos los metadatos para todos los NFTs minteados de forma asíncrona pero NO mostramos
+    // el resultado hasta que estén todos cargados, para evitar glitches visuales
+    const loadNFTMetadata = async () => {
+      try {
+        // Cargamos los metadatos para todos los NFTs minteados
+        const metadataPromises = okMints.map(mint => fetchNftMetadata(umi, mint));
+        const metadataResults = await Promise.allSettled(metadataPromises);
+        
+        // Preparamos los NFTs con sus metadatos ya cargados
+        const completeNfts = okMints.map((mint, index) => ({
+          mint,
+          offChainMetadata: metadataResults[index].status === 'fulfilled' 
+            ? metadataResults[index].value 
+            : null,
+          loading: false,
+          error: metadataResults[index].status === 'rejected'
+        }));
+        
+        // Una vez que tenemos todos los metadatos, actualizamos el estado de una sola vez
+        setMintsCreated(completeNfts);
+        
+        // Y ahora mostramos el modal con todos los datos ya listos
+        onOpen();
+        
+        // Cerramos el toast de carga de metadatos
+        if (loadMetadataToast) {
+          createStandaloneToast().toast.close(loadMetadataToast);
+        }
+        
+        // Mostramos un toast de éxito para los metadatos
+        createStandaloneToast().toast({
+          title: "NFT ready",
+          description: "Your NFT metadata has been loaded successfully!",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      } catch (error) {
+        console.error("Error loading metadata:", error);
+        
+        // Cerramos el toast de carga en caso de error
+        if (loadMetadataToast) {
+          createStandaloneToast().toast.close(loadMetadataToast);
+        }
+        
+        // Mostramos un toast de advertencia
+        createStandaloneToast().toast({
+          title: "Metadata loading issue",
+          description: "There was a problem loading your NFT metadata. You can try refreshing the page.",
+          status: "warning",
+          duration: 8000,
+          isClosable: true,
+        });
+      }
+    };
+    
+    // Ejecutamos la carga de metadatos
+    loadNFTMetadata();
   } catch (e) {
     const msg = safeErrorToString(e);
     console.error("Minting failed:", msg);
