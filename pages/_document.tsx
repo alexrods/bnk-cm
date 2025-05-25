@@ -8,7 +8,6 @@ export default function Document() {
         <link rel="apple-touch-icon" href="/favicon.ico" />
         <meta name="theme-color" content="#000000" />
         <meta name="description" content="BonkGames NFT Mint" />
-        <title>BonkGames NFT Mint</title>
       </Head>
       <body>
         <Main />

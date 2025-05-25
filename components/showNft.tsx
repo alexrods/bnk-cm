@@ -2,6 +2,7 @@ import { JsonMetadata } from "@metaplex-foundation/mpl-token-metadata";
 import { PublicKey } from "@metaplex-foundation/umi";
 import { Box, Text, Divider, SimpleGrid, VStack, Center, Button, Skeleton, Fade } from "@chakra-ui/react";
 import React, { useMemo, memo } from "react";
+import Image from "next/image";
 import {
   Accordion,
   AccordionItem,
@@ -19,7 +20,7 @@ interface TraitsProps {
   metadata: JsonMetadata;
 }
 
-// Memoizamos el componente Trait para evitar re-renderizaciones innecesarias
+// Componente Trait
 const Trait = memo(({ heading, description }: TraitProps) => {
   return (
     <Box
@@ -59,7 +60,7 @@ const Trait = memo(({ heading, description }: TraitProps) => {
   );
 });
 
-// Memoizamos el componente Traits para evitar re-renderizaciones innecesarias
+// Componente Traits
 const Traits = memo(({ metadata }: TraitsProps) => {
   if (metadata === undefined || metadata.attributes === undefined) {
     return <></>;
@@ -130,7 +131,7 @@ const LoadingCard = () => {
   );
 };
 
-// Componente Card memoizado para evitar re-renderizaciones innecesarias
+// Componente Card
 const Card = memo(function Card({
   metadata,
   loading = false,
@@ -138,13 +139,17 @@ const Card = memo(function Card({
   metadata: JsonMetadata | undefined;
   loading?: boolean;
 }) {
+  // Siempre llamamos a los hooks al principio, antes de cualquier return
+  // Usamos un valor por defecto empty string para evitar errores cuando metadata es undefined
+  const image = useMemo(() => {
+    if (!metadata) return "";
+    return metadata.animation_url ?? metadata.image;
+  }, [metadata]);
+  
   // Si está cargando o no hay metadatos, mostramos un estado de carga
   if (loading || !metadata) {
     return loading ? <LoadingCard /> : <Box p={4} textAlign="center">No NFT metadata available</Box>;
   }
-  
-  // Evitamos cálculos repetidos
-  const image = useMemo(() => metadata.animation_url ?? metadata.image, [metadata]);
   
   return (
     <Box 
@@ -168,21 +173,20 @@ const Card = memo(function Card({
           p={2}
           bg="black"
         >
-          <img
-            src={image}
-            alt={metadata.name || "NFT Image"}
-            style={{
-              maxWidth: "100%",
-              maxHeight: "300px",
-              margin: "0 auto",
-              display: "block"
-            }}
-            onError={(e) => {
-              console.error('Error loading NFT image:', e);
-              // Fallback to a placeholder image
-              (e.target as HTMLImageElement).src = '/assets/nft-placeholder.png';
-            }}
-          />
+          <div style={{ position: 'relative', width: '100%', height: '300px' }}>
+            <Image
+              src={image}
+              alt={metadata.name || "NFT Image"}
+              fill
+              style={{
+                objectFit: 'contain',
+                margin: '0 auto'
+              }}
+              onError={() => {
+                console.error('Error loading NFT image');
+              }}
+            />
+          </div>
         </Box>
       ) : (
         <Box
@@ -236,14 +240,15 @@ type Props = {
     | undefined;
 };
 
-// Componente principal para mostrar los NFTs
-export const ShowNft = memo(({ nfts }: Props) => {
-  if (nfts === undefined) {
-    return <></>;
-  }
-
-  // Usamos useMemo para prevenir re-renderizaciones innecesarias
+// Función de componente base para ShowNft - rediseñado para evitar hooks condicionales
+function ShowNftComponent({ nfts }: Props) {
+  // Siempre llamamos a los hooks primero, sin importar si nfts existe o no
+  // Usar operador de optional chaining para manejar el caso cuando nfts es undefined
   const nftCards = useMemo(() => {
+    // Si no hay NFTs, devolvemos un array vacío
+    if (!nfts || nfts.length === 0) return [];
+    
+    // Si hay NFTs, mapeamos cada uno a un componente Card
     return nfts.map((nft) => (
       <Fade in={true} key={nft.mint.toString()}>
         <Box mb={6}>
@@ -255,6 +260,11 @@ export const ShowNft = memo(({ nfts }: Props) => {
       </Fade>
     ));
   }, [nfts]);
+  
+  // Si no hay NFTs o el array está vacío, mostramos un contenedor vacío
+  if (!nfts || nfts.length === 0 || nftCards.length === 0) {
+    return <></>;
+  }
 
   return (
     <Box 
@@ -304,6 +314,16 @@ export const ShowNft = memo(({ nfts }: Props) => {
       </Center>
     </Box>
   );
-});
+}
 
-export default Card;
+// Memoizamos el componente y exportamos
+export const ShowNft = memo(ShowNftComponent);
+
+// Asignamos displayName para evitar errores de ESLint
+Trait.displayName = 'Trait';
+Traits.displayName = 'Traits';
+Card.displayName = 'Card';
+ShowNft.displayName = 'ShowNft';
+
+// Exportamos ShowNft como default
+export default ShowNft;

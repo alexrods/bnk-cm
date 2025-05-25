@@ -315,14 +315,20 @@ const mintClick = async (
         const metadataResults = await Promise.allSettled(metadataPromises);
         
         // Preparamos los NFTs con sus metadatos ya cargados
-        const completeNfts = okMints.map((mint, index) => ({
-          mint,
-          offChainMetadata: metadataResults[index].status === 'fulfilled' 
-            ? metadataResults[index].value 
-            : null,
-          loading: false,
-          error: metadataResults[index].status === 'rejected'
-        }));
+        const completeNfts = okMints.map((mint, index) => {
+          // Usamos una sintaxis segura para acceder a 'value' solo cuando el status es 'fulfilled'
+          const result = metadataResults[index];
+          const metadata = result.status === 'fulfilled' 
+            ? (result as PromiseFulfilledResult<any>).value 
+            : null;
+            
+          return {
+            mint,
+            offChainMetadata: metadata,
+            loading: false,
+            error: result.status === 'rejected'
+          };
+        });
         
         // Una vez que tenemos todos los metadatos, actualizamos el estado de una sola vez
         setMintsCreated(completeNfts);
