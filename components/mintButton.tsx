@@ -49,18 +49,41 @@ import { mintText } from "../settings";
 import {
   Box,
   Button,
+  Center,
   Flex,
+  Heading,
   HStack,
+  IconButton,
+  Link,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Text,
-  VStack,
-  createStandaloneToast,
+  SimpleGrid,
   Skeleton,
+  Stat,
+  StatLabel,
+  StatNumber,
+  Text,
+  Tooltip,
+  useToast,
+  VStack,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  createStandaloneToast,
 } from "@chakra-ui/react";
+import { ExternalLinkIcon } from "@chakra-ui/icons";
+
+// Extender la interfaz Window para permitir nuestras propiedades personalizadas
+declare global {
+  interface Window {
+    solToastShown?: boolean;
+    tokenToastShown?: boolean;
+  }
+}
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 // --------------------------------------------------
@@ -559,7 +582,227 @@ export function ButtonList({
 
   // Find the first available guard
   const firstAvailableGuard = filteredGuardlist.find(guard => guard.allowed);
+  
+  // Usamos useState para tracking de mensajes mostrados durante la sesión
+  const [solErrorToastShown, setSolErrorToastShown] = useState(false);
+  const [tokenErrorToastShown, setTokenErrorToastShown] = useState(false);
+  
+  // Vamos a verificar explícitamente si hay errores de balance en todas las guardias
+  let hasSolPaymentError = false;
+  let hasTokenPaymentError = false;
+  let errorReasons: string[] = [];
+  
+  // Variables para almacenar la cantidad de SOL necesaria
+  let requiredSolAmount = "";
+  let detectedSolCost = false;
+  
+  // Revisar todas las guardias para detectar errores de balance
+  filteredGuardlist.forEach(guard => {
+    if (guard.reason) {
+      errorReasons.push(guard.reason);
+      console.log(`Guardia ${guard.label}: ${guard.reason}`);
+      
+      // Verificar cualquier error relacionado con SOL
+      if (guard.reason.includes("SOL") || guard.reason.includes("sol")) {
+        hasSolPaymentError = true;
+      }
+      
+      // Verificar cualquier error relacionado con tokens - ampliamos los criterios de detección
+      if (
+        guard.reason.includes("token") || 
+        guard.reason.includes("Token") ||
+        guard.reason.includes("TICKET") ||
+        guard.reason.includes("burn") ||
+        guard.reason.includes("enough")
+      ) {
+        hasTokenPaymentError = true;
+      }
+    }
+  });
+  
+  // Verificar si hay algún mensaje que indique "Please connect your wallet"
+  const needsWalletConnection = filteredGuardlist.some(guard => 
+    guard.reason === "Please connect your wallet to mint" || 
+    (guard.reason && guard.reason.includes("connect"))
+  );
+  
+  // Si hay guardias pero ninguna permitida, y la wallet está conectada,
+  // verificamos los errores reales y solo forzamos si no hay errores detectados
+  if (filteredGuardlist.length > 0 && !firstAvailableGuard && !needsWalletConnection) {
+    // Revisar todos los mensajes de error para mejorar la detección
+    filteredGuardlist.forEach(guard => {
+      if (guard.reason) {
+        console.log(`Checking guard reason: ${guard.reason}`);
+        
+        // Buscar cualquier mención a SOL o lamports
+        if (
+          guard.reason.includes("SOL") || 
+          guard.reason.includes("sol") ||
+          guard.reason.includes("lamport") ||
+          guard.reason.includes("balance")
+        ) {
+          hasSolPaymentError = true;
+        }
+        
+        // Buscar cualquier mención a tokens o quemado de tokens
+        if (
+          guard.reason.includes("token") || 
+          guard.reason.includes("Token") ||
+          guard.reason.includes("TICKET") ||
+          guard.reason.includes("burn") ||
+          guard.reason.includes("$")
+        ) {
+          hasTokenPaymentError = true;
+        }
+      }
+    });
+    
+    // Si aún no se detectó ningún error específico, pero sabemos que algo falló,
+    // asumimos que el problema es de SOL por defecto
+    if (!hasSolPaymentError && !hasTokenPaymentError) {
+      hasSolPaymentError = true;
+    }
+  }
+  
+  // Verificar si hay algún error de balance
+  const hasBalanceError = hasSolPaymentError || hasTokenPaymentError;
+  
+  // El grupo se definirá más adelante
+  
+  // Si no hay guardia disponible, mostrar alertas apropiadas
   if (!firstAvailableGuard) {
+    // Si la wallet no está conectada, no mostrar alertas de balance
+    if (needsWalletConnection) {
+      return <></>; // No mostrar nada si la wallet no está conectada
+    }
+    
+    // Mostrar alertas para cada tipo de error
+    if (hasBalanceError) {
+      // Mostrar toast solo una vez durante esta renderización
+      // if (hasSolPaymentError && !solErrorToastShown) {
+      //   createStandaloneToast().toast({
+      //     title: "Balance de SOL insuficiente",
+      //     description: "No tienes suficiente SOL en tu wallet para realizar el mint.",
+      //     status: "error",
+      //     duration: 7000,
+      //     isClosable: true,
+      //     position: "top"
+      //   });
+        
+      //   // Marcar toast como mostrado
+      //   setSolErrorToastShown(true);
+      // }
+      
+      // if (hasTokenPaymentError && !tokenErrorToastShown) {
+      //   createStandaloneToast().toast({
+      //     title: "Tokens $TICKET insuficientes",
+      //     description: "No tienes suficientes tokens $TICKET en tu wallet para realizar el mint.",
+      //     status: "error",
+      //     duration: 7000,
+      //     isClosable: true,
+      //     position: "top"
+      //   });
+        
+      //   // Marcar toast como mostrado
+      //   setTokenErrorToastShown(true);
+      // }
+      
+      // Mostrar un componente de alerta con los errores de balance
+      return (
+        <Box 
+          paddingY={"5px"} 
+          width="100%" 
+          maxW="600px" 
+          margin="0 auto"
+          bg="rgba(0, 0, 0, 0.7)"
+          borderRadius="lg"
+          boxShadow="0 0 20px rgba(255, 0, 0, 0.5)"
+          p={6}
+          border="2px solid #FF5555"
+        >
+          {/* Si faltan ambos recursos, mostrar una alerta combinada */}
+          {hasSolPaymentError || hasTokenPaymentError ? (
+            <Alert status="error" variant="solid" mb={4} borderRadius="md">
+              <AlertIcon />
+              <Box>
+                <AlertTitle>Insufficient balance for minting</AlertTitle>
+                <AlertDescription>
+                  You need both SOL and $TICKET tokens to mint:
+                  <br /><br />
+                  <strong>1.</strong> You need at least 1 $TICKET in your wallet.<br />
+                  <Button 
+                    as="a" 
+                    href="https://raydium.io/swap/?inputMint=sol&outputMint=J624FiUP1MRLVqRf3CayoKc4W8XE473sMau7MFREQFKf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    size="sm"
+                    mt={2}
+                    mb={2}
+                    colorScheme="teal"
+                    leftIcon={<ExternalLinkIcon />}
+                  >
+                    Buy $TICKET on Raydium
+                  </Button>
+                  <br />
+                  <strong>2.</strong> {detectedSolCost ? (
+                    <>You need at least <strong>{requiredSolAmount} SOL</strong> to cover the NFT cost plus transaction fees.</>
+                  ) : (
+                    <>You need enough SOL to cover the NFT cost and transaction fee. ~0.12 SOL</>
+                  )}
+                </AlertDescription>
+              </Box>
+            </Alert>
+          ) : (
+            <>
+              {/* Si solo falta SOL */}
+              {hasSolPaymentError && (
+                <Alert status="error" variant="solid" mb={4} borderRadius="md">
+                  <AlertIcon />
+                  <Box>
+                    <AlertTitle>Balance of SOL insufficient</AlertTitle>
+                    <AlertDescription>
+                      {detectedSolCost ? (
+                        <>You need at least <strong>{requiredSolAmount} SOL</strong> to cover the NFT cost plus transaction fees.</>
+                      ) : (
+                        <>You need enough SOL to cover the NFT cost and transaction fee. ~0.12 SOL</>
+                      )}
+                    </AlertDescription>
+                  </Box>
+                </Alert>
+              )}
+              
+              {/* Si solo faltan tokens $TICKET */}
+              {hasTokenPaymentError && (
+                <Alert status="error" variant="solid" mb={4} borderRadius="md">
+                  <AlertIcon />
+                  <Box>
+                    <AlertTitle>Tokens $TICKET insuficientes</AlertTitle>
+                    <AlertDescription>
+                      You need at least 1 $TICKET in your wallet.
+                      <br />
+                      <Button 
+                        as="a" 
+                        href="https://raydium.io/swap/?inputMint=sol&outputMint=J624FiUP1MRLVqRf3CayoKc4W8XE473sMau7MFREQFKf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="sm"
+                        mt={2}
+                        colorScheme="teal"
+                        leftIcon={<ExternalLinkIcon />}
+                      >
+                        Buy $TICKET on Raydium
+                      </Button>
+                    </AlertDescription>
+                  </Box>
+                </Alert>
+              )}
+            </>
+          )}
+        </Box>
+      );
+    }
+    
+    // Si no hay errores de balance, simplemente no mostrar nada
     return <></>;
   }
 
@@ -579,6 +822,16 @@ export function ButtonList({
     }
     if (group?.guards.mintLimit.__option === "Some") {
       mintLimit = group?.guards.mintLimit.value.limit;
+    }
+    
+    // Extraer el costo de SOL de las guardias
+    if (group.guards.solPayment.__option === "Some") {
+      const solPaymentGuard = group.guards.solPayment.value;
+      const lamports = solPaymentGuard.lamports.basisPoints;
+      const solAmount = Number(lamports) / 1000000000; // Convertir lamports a SOL
+      requiredSolAmount = solAmount.toFixed(2); // Formatear a 2 decimales
+      detectedSolCost = true;
+      console.log(`SOL cost detected: ${requiredSolAmount} SOL`);
     }
     
     // Registrar información del grupo para depuración
@@ -703,11 +956,33 @@ export function ButtonList({
                 {buttonGuard.tokenPriceText}
               </Text>
             </Flex>
+
+            {/* Botón para conseguir $TICKET */}
+            <Flex justifyContent="center" mt={2} mb={1}>
+              <Button 
+                as="a" 
+                href="https://raydium.io/swap/?inputMint=sol&outputMint=J624FiUP1MRLVqRf3CayoKc4W8XE473sMau7MFREQFKf"
+                target="_blank"
+                rel="noopener noreferrer"
+                size="sm"
+                colorScheme="teal"
+                variant="outline"
+                leftIcon={<ExternalLinkIcon />}
+                boxShadow="0 0 10px rgba(0, 255, 255, 0.3)"
+                _hover={{
+                  bg: "rgba(0, 255, 255, 0.1)",
+                  boxShadow: "0 0 15px rgba(0, 255, 255, 0.5)",
+                  transform: "translateY(-2px)"
+                }}
+              >
+                Need a $TICKET?
+              </Button>
+            </Flex>
           </Flex>
         </HStack>
 
         {/* Mint Controls Section */}
-        <HStack spacing={4} mt={2} width="100%" position="relative">
+        <VStack spacing={4} mt={2} width="100%" position="relative">
           {/* Efecto de brillo detrás del botón */}
           <Box
             position="absolute"
@@ -827,7 +1102,8 @@ export function ButtonList({
               color: "var(--primary-color)",
               textShadow: "0 0 5px rgba(0, 255, 255, 0.5)",
               _before: {
-                left: "100%"
+                left: "100%",
+                transition: "0.5s"
               }
             }}
             _active={{
@@ -843,10 +1119,11 @@ export function ButtonList({
               cursor: "not-allowed"
             }}
             transition="all 0.3s ease"
+            w="full"
           >
             {buttonGuard.buttonLabel}
           </Button>
-        </HStack>
+        </VStack>
       </HStack>
     </Box>
   );
