@@ -558,6 +558,10 @@ export function ButtonList({
   const [numberInputValues, setNumberInputValues] = useState<{
     [label: string]: number;
   }>({});
+  
+  // Movidos al principio para cumplir con las reglas de los Hooks
+  const [solErrorToastShown, setSolErrorToastShown] = useState(false);
+  const [tokenErrorToastShown, setTokenErrorToastShown] = useState(false);
 
   if (!candyMachine || !candyGuard) {
     return <></>;
@@ -582,10 +586,6 @@ export function ButtonList({
 
   // Find the first available guard
   const firstAvailableGuard = filteredGuardlist.find(guard => guard.allowed);
-  
-  // Usamos useState para tracking de mensajes mostrados durante la sesión
-  const [solErrorToastShown, setSolErrorToastShown] = useState(false);
-  const [tokenErrorToastShown, setTokenErrorToastShown] = useState(false);
   
   // Vamos a verificar explícitamente si hay errores de balance en todas las guardias
   let hasSolPaymentError = false;
